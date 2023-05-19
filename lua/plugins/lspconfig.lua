@@ -13,6 +13,14 @@ local format_on_save = function(client)
         })
     end
 end
+local on_navic_attach = function(client, bufnr)
+    local ok, navic = pcall(require, "nvim-navic")
+    if not ok then
+        return
+    end
+    navic.attach(client, bufnr)
+end
+
 local set_mappings = function(bufnr, mappings)
     local opts = { noremap = true, silent = true, buffer = bufnr }
     for key, cmd in pairs(mappings or {}) do
@@ -98,6 +106,7 @@ return {
                 vim.api.nvim_exec_autocmds('User', { pattern = 'LspAttached' })
                 format_on_save(client)
                 default_mappings(bufnr, {})
+                on_navic_attach(client, bufnr)
             end
         }
 
