@@ -34,7 +34,6 @@ function config()
                 vim_item.menu = ({
                     buffer = "[Buf]",
                     path = "[Path]",
-                    cmdline = "[Cmd]",
                     nvim_lsp = "[Lsp]",
                     tmux = "[Tmux]",
                     omni = "[Omni]",
@@ -48,19 +47,6 @@ function config()
             end,
         },
     })
-
-    cmp.setup.cmdline("/", {
-        sources = {
-            { name = "buffer" },
-        },
-    })
-
-    cmp.setup.cmdline(":", {
-        sources = cmp.config.sources({
-            { name = "path" },
-            { name = "cmdline" },
-        }),
-    })
 end
 return  {
         "hrsh7th/nvim-cmp",
@@ -71,8 +57,6 @@ return  {
             { "hrsh7th/cmp-nvim-lsp" },
             { "hrsh7th/cmp-path" },
             { "hrsh7th/cmp-buffer" },
-            { "hrsh7th/cmp-cmdline" },
             { "hrsh7th/cmp-omni" },
-            { "uga-rosa/cmp-dictionary" },
         },
   }
