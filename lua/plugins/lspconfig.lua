@@ -1,70 +1,121 @@
-return  {
-  'neovim/nvim-lspconfig',
-   event = { "BufReadPre", "BufNewFile" },
-   dependencies = {
-    { 'williamboman/mason.nvim', config = true, cmd = "Mason" },
-    'williamboman/mason-lspconfig.nvim',
-    { 'j-hui/fidget.nvim', config = true },
-    { 'folke/neodev.nvim', config = true },
-    'hrsh7th/cmp-nvim-lsp',
-  },
-  config = function()
-    local on_attach = function(_, bufnr)
-      local nmap = function(keys, func, desc)
-        if desc then
-          desc = 'LSP: ' .. desc
-        end
-        vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
-      end
-
-      nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-      nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
-      nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
-      nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-      nmap('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
-      nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
-      nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-      nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
-      nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-      nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
-      nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-      nmap('<leader>wa', vim.lsp.buf.add_workspace_folder, '[W]orkspace [A]dd Folder')
-      nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
-      nmap('<leader>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, '[W]orkspace [L]ist Folders')
-      vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_) vim.lsp.buf.format() end, { desc = 'Format current buffer with LSP' })
-      vim.keymap.set('n', '<Leader>f', ":Format<cr>")
+local format_on_save = function(client)
+    if client.supports_method('textDocument/formatting') then
+        local lsp_format_augroup = vim.api.nvim_create_augroup('LspFormat', { clear = true })
+        vim.api.nvim_create_autocmd('BufWritePre', {
+            group = lsp_format_augroup,
+            callback = function()
+                if vim.fn.has('nvim-0.8') == 1 then
+                    vim.lsp.buf.format()
+                else
+                    vim.lsp.buf.formatting_sync({}, 1000)
+                end
+            end,
+        })
     end
-
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
-
-    local mason_lspconfig = require 'mason-lspconfig'
-    mason_lspconfig.setup {
-      ensure_installed = {"clangd","gopls"} 
+end
+local set_mappings = function(bufnr, mappings)
+    local opts = { noremap = true, silent = true, buffer = bufnr }
+    for key, cmd in pairs(mappings or {}) do
+        if type(cmd) == 'string' and cmd:find('^lua') ~= nil then
+            cmd = ':' .. cmd .. '<cr>'
+        end
+        vim.keymap.set('n', key, cmd, opts)
+    end
+end
+local default_mappings = function(bufnr, mappings)
+    local defaults = {
+        gD = vim.lsp.buf.declaration,
+        gd = vim.lsp.buf.definition,
+        gi = vim.lsp.buf.implementation,
+        gr = vim.lsp.buf.references,
+        K = vim.lsp.buf.hover,
+        ['<C-k>'] = vim.lsp.buf.signature_help,
+        ['<leader>rn'] = vim.lsp.buf.rename,
+        ['<localleader>qf'] = vim.lsp.buf.code_action,
+        ['<localleader>ft'] = vim.lsp.buf.formatting, -- compatible with nvim-0.7
+        ['<space>e'] = vim.diagnostic.open_float,
+        ['[d'] = vim.diagnostic.goto_prev,
+        [']d'] = vim.diagnostic.goto_next,
     }
-    local nvim_lsp = require('lspconfig')
-    mason_lspconfig.setup_handlers{
-        function(server_name)
-            local opts = {}
-            opts.on_attach = function(_, buffnr)
-                local bufopts = {silent = true, noremap = true}
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', bufopts)
-                vim.api.nvim_buf_set_keymap(buffnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', bufopts)
-            opts.capabilities = capabilities;
-        end
-        nvim_lsp[server_name].setup(opts)
-    end
-  }
-  end
-}
+    mappings = vim.tbl_deep_extend('keep', mappings or {}, defaults)
+    set_mappings(bufnr, mappings)
+end
 
+local clangd_config_func = function(options)
+    require("lspconfig").clangd.setup({
+        on_attach = options.on_attach,
+        capabilities = vim.tbl_deep_extend("keep", { offsetEncoding = { "utf-16", "utf-8" } }, options.capabilities),
+        single_file_support = true,
+        cmd = {
+            "clangd",
+            "--background-index",
+            "--pch-storage=memory",
+            "--clang-tidy",
+            "--all-scopes-completion",
+            "--completion-style=detailed",
+            "--header-insertion-decorators",
+        },
+    })
+end
+
+
+
+return {
+    'neovim/nvim-lspconfig',
+    event = { "BufReadPre", "BufNewFile" },
+    dependencies = {
+        { 'williamboman/mason.nvim',          config = true, cmd = "Mason" },
+        { 'williamboman/mason-lspconfig.nvim' },
+        { 'j-hui/fidget.nvim',                config = true },
+        { 'folke/neodev.nvim',                config = true },
+        { 'hrsh7th/cmp-nvim-lsp' },
+    },
+
+    config = function()
+        vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
+            vim.lsp.handlers.hover,
+            { border = 'rounded' }
+        )
+
+        vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
+            vim.lsp.handlers.signature_help,
+            {
+                border = 'rounded',
+                close_events = { "CursorMoved", "BufHidden", "InsertCharPre" }
+            }
+        )
+        vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+            signs = true,
+            underline = true,
+            virtual_text = true,
+            update_in_insert = false,
+        })
+
+        local lsp_defaults = {
+            capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities()),
+            vim.lsp.protocol.make_client_capabilities(),
+            on_attach = function(client, bufnr)
+                vim.api.nvim_exec_autocmds('User', { pattern = 'LspAttached' })
+                format_on_save(client)
+                default_mappings(bufnr, {})
+            end
+        }
+
+        local mason_lspconfig = require('mason-lspconfig')
+        mason_lspconfig.setup {
+            ensure_installed = { "clangd", "gopls" },
+            on_attach = lsp_defaults.on_attach,
+            capabilities = lsp_defaults.capabilities,
+        }
+
+        local nvim_lsp = require('lspconfig')
+        local function mason_handler(lsp_name)
+            if lsp_name == "clangd" then
+                clangd_config_func(lsp_defaults)
+            else
+                nvim_lsp[lsp_name].setup(lsp_defaults)
+            end
+        end
+        mason_lspconfig.setup_handlers({ mason_handler })
+    end
+}

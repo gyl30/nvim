@@ -23,7 +23,7 @@ local options = {
 return {
     "williamboman/mason.nvim",
     cmd = { "Mason", "MasonInstall", "MasonInstallAll", "MasonUninstall", "MasonUninstallAll", "MasonLog" },
-    opts = options, 
+    opts = options,
     config = function(_, opts)
       require("mason").setup(opts)
       vim.api.nvim_create_user_command("MasonInstallAll", function()
