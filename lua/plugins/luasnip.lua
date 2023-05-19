@@ -24,4 +24,5 @@ return {
     config = function(_, opts)
         luasnip(opts)
     end,
+    event = 'VeryLazy'
 }

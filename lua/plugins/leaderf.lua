@@ -35,6 +35,5 @@ return {
     "Yggdroot/LeaderF",
     build = ":LeaderfInstallCExtension",
     config = config,
-    event =
-    'VeryLazy',
+    event = 'VeryLazy',
 }
