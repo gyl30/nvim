@@ -1,51 +1,94 @@
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-local opt = vim.opt
-opt.autowrite = true -- Enable auto write
-opt.clipboard = "unnamedplus" -- Sync with system clipboard
-opt.completeopt = "menu,menuone,noselect"
-opt.conceallevel = 3 -- Hide * markup for bold and italic
-opt.confirm = true -- Confirm to save changes before exiting modified buffer
-opt.cursorline = true -- Enable highlighting of the current line
-opt.expandtab = true -- Use spaces instead of tabs
-opt.formatoptions = "jcroqlnt" -- tcqj
-opt.grepformat = "%f:%l:%c:%m"
-opt.grepprg = "rg --vimgrep"
-opt.ignorecase = true -- Ignore case
-opt.inccommand = "nosplit" -- preview incremental substitute
-opt.laststatus = 0
-opt.list = true -- Show some invisible characters (tabs...
-opt.mouse = ""
-opt.number = true -- Print line number
-opt.pumblend = 10 -- Popup blend
-opt.pumheight = 10 -- Maximum number of entries in a popup
-opt.relativenumber = true -- Relative line numbers
-opt.scrolloff = 4 -- Lines of context
-opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize" }
-opt.shiftround = true -- Round indent
-opt.shiftwidth = 2 -- Size of an indent
-opt.shortmess:append({ W = true, I = true, c = true })
-opt.showmode = false -- Dont show mode since we have a statusline
-opt.sidescrolloff = 8 -- Columns of context
-opt.signcolumn = "yes" -- Always show the signcolumn, otherwise it would shift the text each time
-opt.smartcase = true -- Don't ignore case with capitals
-opt.smartindent = true -- Insert indents automatically
-opt.spelllang = { "en" }
-opt.splitbelow = true -- Put new windows below current
-opt.splitright = true -- Put new windows right of current
-opt.tabstop = 2 -- Number of spaces tabs count for
-opt.termguicolors = true -- True color support
-opt.timeoutlen = 300
-opt.undofile = true
-opt.undolevels = 10000
-opt.updatetime = 200 -- Save swap file and trigger CursorHold
-opt.wildmode = "longest:full,full" -- Command-line completion mode
-opt.winminwidth = 5 -- Minimum window width
-opt.wrap = false -- Disable line wrap
+vim.g.mapleader=','
+vim.g.maplocalleader=';'
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_node_provider = 0
+vim.opt.fileencodings='utf8,ucs-bom,gbk,cp936,gb2312,gb18030'
+vim.opt.fileencoding='utf-8'
+vim.opt.termguicolors=true
+vim.opt.number=true
+vim.opt.showcmd=false
+vim.opt.mouse=''
+vim.opt.cursorline=true
+vim.opt.ttimeoutlen=0
+vim.opt.laststatus=2
+vim.opt.cmdheight=1
+vim.opt.showtabline=0
+vim.opt.showmode=false
+vim.opt.autochdir=true
+vim.opt.tabstop=4
+vim.opt.shiftwidth=4
+vim.opt.softtabstop=4
+vim.opt.smarttab=true
+vim.opt.expandtab=true
+vim.opt.wrap=false
+vim.opt.sidescroll=10
+vim.opt.colorcolumn='100'
+vim.opt.hidden=true
+vim.opt.shortmess='aFc'
+vim.opt.hlsearch=true
+vim.opt.incsearch=true
+vim.opt.ignorecase=true
+vim.opt.autowrite=true
+vim.opt.confirm=true
+vim.opt.langmenu='zh_CN.UTF-8'
+vim.opt.fillchars = "vert:│"
+vim.opt.virtualedit={'block','onemore'}
+vim.opt.helplang='cn'
+vim.opt.encoding='utf8'
+vim.opt.updatecount=100
+vim.opt.undofile=true
+vim.opt.completeopt = "menu,menuone,noselect"
+vim.opt.scrolloff=15
+vim.opt.foldcolumn = '1'
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.foldenable = true
+vim.opt.list = true
+vim.opt.listchars = 'tab:»·,nbsp:+,trail:·,extends:→,precedes:←'
+vim.cmd[[
+autocmd FileType * setlocal formatoptions-=o
+]]
+vim.opt.wildignore:append'*.pyc,*.o,*.obj,*~,*.exe,*.a,*.pdb,*.lib'
+vim.opt.wildignore:append'*_build/*,*.so,*.dll,*.swp,*.egg,*.jar,*.class,*.pyc,*.pyo,*.bin,*.dex'
+vim.opt.wildignore:append'***/coverage/*,*.log,*.pyc,*.sqlite,*.sqlite3,*.min.js,*.min.css,*.tags'
+vim.opt.wildignore:append'***/node_modules/*,*.zip,*.7z,*.rar,*.gz,*.tar,*.gzip,*.bz2,*.tgz,*.xz'
+vim.opt.wildignore:append'***/android/*,*.png,*.jpg,*.gif,*.bmp,*.tga,*.pcx,*.ppm,*.img,*.iso'
+vim.opt.wildignore:append'***/ios/*,*.pdf,*.dmg,*.app,*.ipa,*.apk,*.mobi,*.epub'
+vim.opt.wildignore:append'***/.git/*,*.mp4,*.avi,*.flv,*.mov,*.mkv,*.swf,*.swc'
+vim.opt.wildignore:append'*.ppt,*.pptx,*.doc,*.docx,*.xlt,*.xls,*.xlsx,*.odt,*.wps'
+vim.opt.wildignore:append'*/.git/*,*/.svn/*,*.DS_Store'
+vim.opt.wildignore:append'*/node_modules/*,*/nginx_runtime/*,*/build/*,*/logs/*,*/dist/*,*/tmp/*'
 
-if vim.fn.has("nvim-0.9.0") == 1 then
-  opt.splitkeep = "screen"
-  opt.shortmess:append({ C = true })
-end
-vim.g.markdown_recommended_style = 0
+local cache_dir = os.getenv('HOME') .. '/.cache/nvim/'
+vim.opt.directory = cache_dir .. 'swag/'
+vim.opt.undodir = cache_dir .. 'undo/'
+vim.opt.backupdir = cache_dir .. 'backup/'
+vim.opt.viewdir = cache_dir .. 'view/'
+vim.opt.spellfile = cache_dir .. 'spell/en.uft-8.add'
+vim.opt.clipboard = 'unnamedplus'
 
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_node_provider = 0
+
+
+ if vim.fn.executable('rg') == 1 then
+     vim.opt.grepformat = '%f:%l:%c:%m,%f:%l:%m'
+     vim.opt.grepprg = 'rg --vimgrep --no-heading --smart-case'
+ end
+
+ local python2_dirs={'/user/bin/python','/usr/local/bin/python','/home/linuxbrew/.linuxbrew/bin/python'}
+ local python3_dirs={'/user/bin/python3','/usr/local/bin/python3','/home/linuxbrew/.linuxbrew/bin/python3'}
+
+ for index, dir in pairs(python2_dirs) do
+     if vim.loop.fs_stat(dir) then
+         vim.g.python_host_prog = dir
+     end
+ end
+
+ for index, dir in pairs(python3_dirs) do
+     if vim.loop.fs_stat(dir) then
+         vim.g.python3_host_prog = dir
+     end
+ end
