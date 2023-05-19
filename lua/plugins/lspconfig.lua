@@ -80,25 +80,6 @@ return {
     },
 
     config = function()
-        vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
-            vim.lsp.handlers.hover,
-            { border = 'rounded' }
-        )
-
-        vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
-            vim.lsp.handlers.signature_help,
-            {
-                border = 'rounded',
-                close_events = { "CursorMoved", "BufHidden", "InsertCharPre" }
-            }
-        )
-        vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
-            signs = true,
-            underline = true,
-            virtual_text = true,
-            update_in_insert = false,
-        })
-
         local lsp_defaults = {
             capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities()),
             vim.lsp.protocol.make_client_capabilities(),
@@ -109,7 +90,12 @@ return {
                 on_navic_attach(client, bufnr)
             end
         }
-
+        vim.lsp.handlers['workspace/diagnostic/refresh'] = function(_, _, ctx)
+            local ns = vim.lsp.diagnostic.get_namespace(ctx.client_id)
+            local bufnr = vim.api.nvim_get_current_buf()
+            vim.diagnostic.reset(ns, bufnr)
+            return true
+        end
         local mason_lspconfig = require('mason-lspconfig')
         mason_lspconfig.setup {
             ensure_installed = { "clangd", "gopls" },
@@ -126,5 +112,47 @@ return {
             end
         end
         mason_lspconfig.setup_handlers({ mason_handler })
+        nvim_lsp.gopls.setup({
+            cmd = { 'gopls', 'serve' },
+            on_attach = lsp_defaults.on_attach,
+            init_options = {
+                usePlaceholders = true,
+                completeUnimported = true,
+            },
+            settings = {
+                gopls = {
+                    analyses = {
+                        unusedparams = true,
+                    },
+                    staticcheck = true,
+                },
+            },
+        })
+        nvim_lsp.lua_ls.setup({
+            on_attach = lsp_defaults.on_attach,
+            settings = {
+                Lua = {
+                    diagnostics = {
+                        enable = true,
+                        globals = { 'vim' },
+                    },
+                    runtime = {
+                        version = 'LuaJIT',
+                        path = vim.split(package.path, ';'),
+                    },
+                    workspace = {
+                        library = {
+                            vim.env.VIMRUNTIME,
+                            vim.env.HOME .. '/.local/share/nvim/lazy/emmylua-nvim',
+                        },
+                        checkThirdParty = false,
+                    },
+                    completion = {
+                        callSnippet = 'Replace',
+                    },
+                },
+            },
+        })
     end
+
 }
