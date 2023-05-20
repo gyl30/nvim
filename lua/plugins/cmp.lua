@@ -261,15 +261,6 @@ local config = function()
         }
     })
 
-    -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-    cmp.setup.cmdline(':', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources({
-            { name = 'cmdline' }
-        }, {
-            { name = 'path' }
-        })
-    })
     cmp.setup(cmp_config)
     -- Customization for Pmenu
     vim.api.nvim_set_hl(0, "PmenuSel", { bg = "#282C34", fg = "NONE" })

@@ -62,4 +62,3 @@ return {
     event = "VeryLazy",
     opts = opts,
 }
-
