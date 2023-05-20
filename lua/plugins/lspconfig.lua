@@ -38,7 +38,7 @@ local options = {
         end
     },
 }
-local lsp_highlight_document = function(client)
+local lsp_highlight_document = function(client, bufnr)
     local status_ok, highlight_supported = pcall(function()
         return client.supports_method('textDocument/documentHighlight')
     end)
@@ -69,65 +69,11 @@ local lsp_highlight_document = function(client)
         callback = vim.lsp.buf.clear_references,
     })
 end
-local format_on_save = function(client, bufnr, format_opts)
-    local format_group = 'lsp_sync_format'
-    local autocmd = vim.api.nvim_create_autocmd
-    local augroup = vim.api.nvim_create_augroup
-    local format_id = augroup(format_group, { clear = false })
-
-    client = client or {}
-    format_opts = format_opts or {}
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
-
-    vim.api.nvim_clear_autocmds({ group = format_group, buffer = bufnr })
-
-    if vim.b.lsp_zero_enable_autoformat == nil then
-        vim.b.lsp_zero_enable_autoformat = 1
-    end
-
-    local config = vim.tbl_deep_extend(
-        'force',
-        { timeout_ms = 1000 },
-        format_opts,
-        {
-            async = false,
-            name = client.name,
-            bufnr = bufnr,
-        }
-    )
-
-    local apply_format = function()
-        local autoformat = vim.b.lsp_zero_enable_autoformat
-        local enabled = (autoformat == 1 or autoformat == true)
-        if not enabled then
-            return
-        end
-
-        vim.lsp.buf.format(config)
-    end
-
-    local desc = 'Format current buffer'
-
-    if client.name then
-        desc = string.format('Format buffer with %s', client.name)
-    end
-
-    autocmd('BufWritePre', {
-        group = format_id,
-        buffer = bufnr,
-        desc = desc,
-        callback = apply_format
-    })
-end
 local config = function()
-    local lspconfig = require('lspconfig')
-
-
     vim.api.nvim_create_autocmd('LspAttach', {
         desc = 'LSP actions',
-        callback = function(event)
+        callback = function(_)
             local opts = { noremap = true, silent = true }
-
             vim.keymap.set('n', 'K', '<cmd>lua vim.lsp.buf.hover()<cr>', opts)
             vim.keymap.set('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<cr>', opts)
             vim.keymap.set('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<cr>', opts)
@@ -148,7 +94,7 @@ local config = function()
         _ = client;
         _ = bufnr;
         require "lsp_signature".on_attach()
-        lsp_highlight_document(client)
+        lsp_highlight_document(client, bufnr)
         vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             callback = function()
