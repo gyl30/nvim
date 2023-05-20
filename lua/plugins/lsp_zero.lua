@@ -3,6 +3,7 @@ return {
     branch = 'v2.x',
     dependencies = {
         { 'neovim/nvim-lspconfig' }, -- Required
+        { "p00f/clangd_extensions.nvim" },
         {
             'williamboman/mason.nvim',
             build = function()
@@ -19,7 +20,7 @@ return {
         require("neodev").setup({})
         local lsp = require('lsp-zero').preset({
             manage_nvim_cmp = {
-                set_sources = 'lsp',
+                set_sources = 'recommended',
                 set_basic_mappings = true,
                 set_extra_mappings = false,
                 use_luasnip = true,
@@ -57,32 +58,52 @@ return {
             use_fallback = true,
             update_on_delete = true,
         })
-        require('lsp-zero').extend_lspconfig()
-        local tailwind_formatter = require("tailwindcss-colorizer-cmp").formatter
-        local lspkind = require("lspkind")
+        lsp.skip_server_setup({ 'clangd' })
         lsp.setup()
+        require('lsp-zero').extend_lspconfig()
+        require('clangd_extensions').setup()
+        require('luasnip.loaders.from_vscode').lazy_load()
+        local lspkind = require("lspkind")
         local cmp = require('cmp')
         local cmp_action = require('lsp-zero').cmp_action()
         local types = require('cmp.types')
         cmp.setup({
-            preselect = 'item',
+            preselect = require('cmp').PreselectMode.None,
             confirmation = {
                 default_behavior = types.cmp.ConfirmBehavior.Replace,
             },
             completion = {
-                completeopt = 'menu,menuone,noinsert'
+                completeopt = "menu, menuone, noinsert, noselect"
+            },
+            window = {
+                completion = cmp.config.window.bordered(),
+                documentation = cmp.config.window.bordered(),
+            },
+            sources = {
+                { name = 'path' },
+                { name = 'nvim_lsp' },
+                { name = 'nvim_lua' },
+                { name = 'buffer',  keyword_length = 3 },
+                { name = 'luasnip', keyword_length = 2 },
             },
             formatting = {
                 format = lspkind.cmp_format({
                     mode = 'symbol',
                     maxwidth = 50,
-                    before = tailwind_formatter,
                 })
             },
-
+            snippet = {
+                expand = function(args)
+                    require('luasnip').lsp_expand(args.body)
+                end,
+            },
             mapping = {
-                ['<Tab>'] = cmp_action.tab_complete(),
-                ['<S-Tab>'] = cmp_action.select_prev_or_fallback(),
+                ['<Tab>'] = cmp_action.luasnip_supertab(),
+                ['<S-Tab>'] = cmp_action.luasnip_shift_supertab(),
+                --['<Tab>'] = cmp_action.tab_complete(),
+                --['<S-Tab>'] = cmp_action.select_prev_or_fallback(),
+                ['<C-f>'] = cmp_action.luasnip_jump_forward(),
+                ['<C-b>'] = cmp_action.luasnip_jump_backward(),
             }
         })
     end
