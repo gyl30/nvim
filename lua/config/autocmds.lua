@@ -103,3 +103,6 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
         vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
     end,
 })
+vim.cmd([[autocmd FileType alpha set laststatus=0]])
+vim.cmd([[autocmd FileType alpha set noruler]])
+
