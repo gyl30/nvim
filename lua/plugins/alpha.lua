@@ -126,5 +126,12 @@ return {
     "goolord/alpha-nvim",
     lazy = true,
     event = "VimEnter",
-    config = config,
+    config = function()
+        local theme = require("alpha.themes.theta") --or require("alpha.themes.startify")
+        theme.mru_opts.autocd = true
+        theme.config.layout[6] = nil
+        theme.config.layout[5] = nil
+        require 'alpha'.setup(theme.config)
+    end,
+
 }

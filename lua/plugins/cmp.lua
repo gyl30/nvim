@@ -137,7 +137,7 @@ local config = function()
     require("luasnip.loaders.from_vscode").lazy_load() -- load freindly-snippets
     require("luasnip.loaders.from_vscode").load({
         paths = {                                      -- load custom snippets
-            vim.fn.stdpath("config") .. "/my-snippets"
+            vim.fn.stdpath("config") .. "/snippets"
         }
     }) -- Load snippets from my-snippets folder
 
@@ -188,13 +188,13 @@ local config = function()
             { name = "emoji" },
             { name = "treesitter" },
             { name = "crates" },
+            { name = 'nvim_lsp_signature_help' },
         },
         mapping = cmp.mapping.preset.insert {
             ["<C-k>"] = cmp.mapping.select_prev_item(),
             ["<C-j>"] = cmp.mapping.select_next_item(),
             ["<C-d>"] = cmp.mapping.scroll_docs(-4),
             ["<C-f>"] = cmp.mapping.scroll_docs(4),
-            -- TODO: potentially fix emmet nonsense
             ["<Tab>"] = cmp.mapping(function(fallback)
                 if cmp.visible() then
                     cmp.select_next_item()
@@ -318,6 +318,7 @@ return {
         "hrsh7th/cmp-path",
         'hrsh7th/cmp-nvim-lua', -- Required
         "saadparwaiz1/cmp_luasnip",
+        "hrsh7th/cmp-nvim-lsp-signature-help",
     },
     config = config,
 }
