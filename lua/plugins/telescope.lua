@@ -6,41 +6,20 @@ return {
         "nvim-telescope/telescope-file-browser.nvim",
     },
   cmd = "Telescope",
-  opts = function()
+    config = function()
     local actions = require "telescope.actions"
-    return {
+    require('telescope').setup({
       defaults = {
         path_display = { "truncate" },
         sorting_strategy = "ascending",
+        layout_strategy = "vertical",
+        show_line = false,
         layout_config = {
-          horizontal = { prompt_position = "top", preview_width = 0.55 },
-          vertical = { mirror = false },
-          width = 0.87,
-          height = 0.80,
-          preview_cutoff = 120,
-        },
-        pickers = {
-            lsp_references = {
-                layout_strategy = "vertical",
-                show_line = false,
-                layout_config = {
-                    prompt_position = "bottom",
-                    width = 0.9,
-                    height = 0.9,
-                    preview_cutoff = 1,
-                    mirror = false,
-                },
-            },
-            live_grep = {
-                layout_strategy = "vertical",
-                layout_config = {
-                    prompt_position = "bottom",
-                    width = 0.9,
-                    height = 0.9,
-                    preview_cutoff = 1,
-                    mirror = false,
-                },
-            },
+            prompt_position = "bottom",
+            width = 0.9,
+            height = 0.9,
+            preview_cutoff = 1,
+            mirror = false,
         },
         mappings = {
           i = {
@@ -52,9 +31,6 @@ return {
           n = { q = actions.close },
         },
       },
-    }
-  end,
-    config = function(opts)
-        require('telescope').setup{opts}
+    })
     end,
 }

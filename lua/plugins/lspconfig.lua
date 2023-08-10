@@ -5,23 +5,24 @@ vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(ev)
     vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
     local opts = { buffer = ev.buf }
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    local builtin = require('telescope.builtin')
+    vim.keymap.set('n', 'gr', builtin.lsp_references, opts)
+    vim.keymap.set('n', 'gd', builtin.lsp_definitions, opts)
+    vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
     vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
-    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
-    vim.keymap.set('n', '<space>wl', function()
-      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-    end, opts)
-    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
     vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
     vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
     vim.keymap.set('n', '<space>f', function()
       vim.lsp.buf.format { async = true }
     end, opts)
+    require("clangd_extensions.inlay_hints").setup_autocmd()
+    require("clangd_extensions.inlay_hints").set_inlay_hints()
+    vim.api.nvim_buf_create_user_command(
+      ev.buf,
+      "Format",
+      function() vim.lsp.buf.format(M.format_opts) end,
+      { desc = "Format file with LSP" }
+    )
   end,
 })
 local clangd_options = {
@@ -47,14 +48,19 @@ local clangd_options = {
     }
 
 }
-
+vim.diagnostic.config {
+    virtual_text = false,
+    update_in_insert = true,
+}
 local config = function()
     local lspconfig = require('lspconfig')
     local lsp_status = require('lsp-status')
+    local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
+    lsp_capabilities = vim.tbl_extend('keep', lsp_capabilities or {}, lsp_status.capabilities)
     lsp_status.register_progress()
     clangd_options.handlers = lsp_status.extensions.clangd.setup()
     clangd_options.on_attach = lsp_status.on_attach
-    clangd_options.capabilities = vim.tbl_extend('keep', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_status.capabilities)
+    clangd_options.capabilities = vim.tbl_extend('keep', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
     lspconfig.clangd.setup {clangd_options}
 end
 
