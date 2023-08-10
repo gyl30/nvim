@@ -70,6 +70,15 @@ local gopls_options = {
         },
     },
 }
+local lua_ls_options = {
+    settings = {
+        Lua = {
+            completion = {
+                callSnippet = "Replace"
+            }
+        }
+    }
+}
 vim.diagnostic.config {
     virtual_text = false,
     update_in_insert = true,
@@ -85,18 +94,20 @@ local update_option = function(opts)
     lsp_capabilities = vim.tbl_extend('keep', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
     opts.capabilities = lsp_capabilities
     return opts
-
 end
 
 
 local config = function()
     local lspconfig = require('lspconfig')
     local lsp_status = require('lsp-status')
+    require("neodev").setup({})
     clangd_options.handlers = lsp_status.extensions.clangd.setup()
     clangd_options = update_option(clangd_options)
+    lua_ls_options = update_option(lua_ls_options)
     gopls_options = update_option(gopls_options)
     lspconfig.clangd.setup {clangd_options}
     lspconfig.gopls.setup {gopls_options}
+    lspconfig.lua_ls.setup {lua_ls_options}
 end
 
 return {
