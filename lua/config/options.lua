@@ -1,6 +1,3 @@
-vim.g.loaded_perl_provider = 0
-vim.g.loaded_ruby_provider = 0
-vim.g.loaded_node_provider = 0
 vim.opt.fileencodings = 'utf8,ucs-bom,gbk,cp936,gb2312,gb18030'
 vim.opt.fileencoding = 'utf-8'
 vim.opt.termguicolors = true
@@ -35,13 +32,16 @@ vim.opt.virtualedit = { 'block', 'onemore' }
 vim.opt.helplang = 'cn'
 vim.opt.encoding = 'utf8'
 vim.opt.updatecount = 100
+vim.opt.updatetime = 300
+vim.opt.signcolumn = "no"
+vim.opt.foldcolumn = "0"
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldlevel = 99
+vim.opt.foldenable = false
 vim.opt.undofile = true
 vim.opt.completeopt = "menu,menuone,noselect"
 vim.opt.scrolloff = 15
-vim.opt.foldcolumn = '1'
-vim.opt.foldlevel = 99
-vim.opt.foldlevelstart = 99
-vim.opt.foldenable = true
 vim.opt.list = true
 vim.opt.listchars = 'tab:»·,nbsp:+,trail:·,extends:→,precedes:←'
 vim.cmd [[
