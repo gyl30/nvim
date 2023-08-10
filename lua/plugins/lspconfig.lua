@@ -28,6 +28,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 local clangd_options = {
     settings = {
         clangd = {
+            init_options = { clangdFileStatus = true },
             cmd = {
                 "clangd", 
                 "--background-index",
@@ -46,22 +47,56 @@ local clangd_options = {
             }
         }
     }
-
+}
+local gopls_options = {
+    cmd = {"gopls", "serve"},
+    filetypes = {"go", "gomod"},
+    settings = {
+        gopls = {
+            analyses = {
+                unusedparams = true,
+            },
+            staticcheck = true,
+            hints = {
+                assignVariableTypes = false,
+                compositeLiteralFields = false,
+                compositeLiteralTypes = false,
+                constantValues = false,
+                functionTypeParameters = false,
+                parameterNames = false,
+                rangeVariableTypes = false,
+            },
+            semanticTokens = true,
+        },
+    },
 }
 vim.diagnostic.config {
     virtual_text = false,
     update_in_insert = true,
 }
-local config = function()
+
+local update_option = function(opts)
     local lspconfig = require('lspconfig')
     local lsp_status = require('lsp-status')
     local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
     lsp_capabilities = vim.tbl_extend('keep', lsp_capabilities or {}, lsp_status.capabilities)
     lsp_status.register_progress()
+    opts.on_attach = lsp_status.on_attach
+    lsp_capabilities = vim.tbl_extend('keep', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
+    opts.capabilities = lsp_capabilities
+    return opts
+
+end
+
+
+local config = function()
+    local lspconfig = require('lspconfig')
+    local lsp_status = require('lsp-status')
     clangd_options.handlers = lsp_status.extensions.clangd.setup()
-    clangd_options.on_attach = lsp_status.on_attach
-    clangd_options.capabilities = vim.tbl_extend('keep', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
+    clangd_options = update_option(clangd_options)
+    gopls_options = update_option(gopls_options)
     lspconfig.clangd.setup {clangd_options}
+    lspconfig.gopls.setup {gopls_options}
 end
 
 return {
