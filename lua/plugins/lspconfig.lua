@@ -81,7 +81,17 @@ local lua_ls_options = {
 }
 vim.diagnostic.config {
     virtual_text = false,
-    update_in_insert = true,
+    underline = false,
+    update_in_insert = false,
+    underline = true,
+    float = {
+      focused = false,
+      style = "minimal",
+      border = "rounded",
+      source = "always",
+      header = "",
+      prefix = "",
+    },
 }
 
 local update_option = function(opts)

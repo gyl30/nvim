@@ -102,18 +102,12 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     end,
 })
 
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "cpp", "c","go","cmake","bash","lua" },
+vim.api.nvim_create_autocmd("CursorHold", {
     callback = function()
-        vim.wo.signcolumn = "no"
-        vim.diagnostic.open_float(nil, { focusable = false })
+        vim.signcolumn="no"
+        vim.diagnostic.open_float(nil, {show_header = false, severity_sort = true, scope = "line", focusable = false })
     end,
 })
-
-vim.cmd [[
-set signcolumn=no
-autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
-]]
 
 vim.api.nvim_create_autocmd('BufWritePre', {
   pattern = '*.go',
