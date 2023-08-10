@@ -46,3 +46,64 @@ augroup CursorLineOnlyInActiveWindow
         autocmd WinLeave * setlocal nocursorline
 augroup END
 ]])
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+    desc = "Highlight yanked text",
+    group = vim.api.nvim_create_augroup("highlightyank", { clear = true }),
+    pattern = "*",
+    callback = function() vim.highlight.on_yank() end,
+})
+vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
+    group = vim.api.nvim_create_augroup("checktime", { clear = true }),
+    command = "checktime",
+})
+vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("close_with_q", { clear = true }),
+    pattern = {
+        "PlenaryTestPopup",
+        "help",
+        "lspinfo",
+        "man",
+        "notify",
+        "qf",
+        "spectre_panel",
+        "startuptime",
+        "tsplayground",
+        "checkhealth",
+    },
+    callback = function(event)
+        vim.bo[event.buf].buflisted = false
+        vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
+    end,
+})
+-- wrap and check for spell in text filetypes
+vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("wrap_spell", { clear = true }),
+    pattern = { "gitcommit", "markdown" },
+    callback = function()
+        vim.opt_local.wrap = true
+        vim.opt_local.spell = true
+    end,
+})
+-- resize splits if window got resized
+vim.api.nvim_create_autocmd({ "VimResized" }, {
+    group = vim.api.nvim_create_augroup("resize_splits", { clear = true }),
+    callback = function()
+        vim.cmd("tabdo wincmd =")
+    end,
+})
+-- Auto create dir when saving a file, in case some intermediate directory does not exist
+vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+    group = vim.api.nvim_create_augroup("auto_create_dir", { clear = true }),
+    callback = function(event)
+        if event.match:match("^%w%w+://") then
+            return
+        end
+        local file = vim.loop.fs_realpath(event.match) or event.match
+        vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
+    end,
+
+})
+
+vim.cmd([[autocmd FileType alpha set laststatus=0]])
+vim.cmd([[autocmd FileType alpha set noruler]])
