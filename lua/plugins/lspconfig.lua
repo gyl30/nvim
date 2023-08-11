@@ -96,7 +96,6 @@ local config = function()
     clangd_options = update_option(clangd_options)
     lua_ls_options = update_option(lua_ls_options)
     gopls_options = update_option(gopls_options)
-
     lspconfig.clangd.setup {clangd_options}
     lspconfig.gopls.setup {gopls_options}
     lspconfig.lua_ls.setup {lua_ls_options}
