@@ -10,6 +10,9 @@ require("lazy").setup({
     spec = { { import = "plugins" }, },
     change_detection = { notify = false, },
     performance = {
+        cache = {
+            enabled = false,
+        },
         rtp = {
             disabled_plugins = {
                 "gzip",

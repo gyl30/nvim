@@ -3,63 +3,6 @@ require('vim.lsp.log').set_format_func(vim.inspect)
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "rounded", silent = true })
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = "rounded", silent = true })
 
-local clangd_options = {
-    on_attach = on_attach,
-    settings = {
-        clangd = {
-            init_options = { clangdFileStatus = true },
-            cmd = {
-                "clangd", 
-                "--background-index",
-                "--clang-tidy",
-                "--clang-tidy-checks=bugprone-*, clang-analyzer-*, google-*, modernize-*, performance-*, portability-*, readability-*, -bugprone-too-small-loop-variable, -clang-analyzer-cplusplus.NewDelete, -clang-analyzer-cplusplus.NewDeleteLeaks, -modernize-use-nodiscard, -modernize-avoid-c-arrays, -readability-magic-numbers, -bugprone-branch-clone, -bugprone-signed-char-misuse, -bugprone-unhandled-self-assignment, -clang-diagnostic-implicit-int-float-conversion, -modernize-use-auto, -modernize-use-trailing-return-type, -readability-convert-member-functions-to-static, -readability-make-member-function-const, -readability-qualified-auto, -readability-redundant-access-specifiers,",
-                "--completion-style=detailed",
-                "--cross-file-rename=true",
-                "--header-insertion=iwyu",
-                "--pch-storage=memory",
-                "--function-arg-placeholders=false",
-                "--log=verbose",
-                "--ranking-model=decision_forest",
-                "--header-insertion-decorators",
-                "-j=12",
-                "--pretty",
-            }
-        }
-    }
-}
-local gopls_options = {
-    cmd = {"gopls", "serve"},
-    filetypes = {"go", "gomod"},
-    on_attach = on_attach,
-    settings = {
-        gopls = {
-            analyses = {
-                unusedparams = true,
-            },
-            staticcheck = true,
-            hints = {
-                assignVariableTypes = false,
-                compositeLiteralFields = false,
-                compositeLiteralTypes = false,
-                constantValues = false,
-                functionTypeParameters = false,
-                parameterNames = false,
-                rangeVariableTypes = false,
-            },
-            semanticTokens = true,
-        },
-    },
-}
-local lua_ls_options = {
-    on_attach = on_attach,
-    settings = {
-        Lua = {
-            completion = {
-                callSnippet = "Replace"
-            }
-        }
-    }
-}
 vim.diagnostic.config {
     virtual_text = false,
     underline = false,
@@ -74,36 +17,83 @@ vim.diagnostic.config {
     },
 }
 
-local update_option = function(opts)
-    local lspconfig = require('lspconfig')
-    local lsp_status = require('lsp-status')
-    local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
-    lsp_capabilities = vim.tbl_extend('keep', lsp_capabilities or {}, lsp_status.capabilities)
-    lsp_status.register_progress()
-    opts.on_attach = lsp_status.on_attach
-    lsp_capabilities = vim.tbl_extend('keep', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
-    opts.capabilities = lsp_capabilities
-    return opts
+
+local on_init = function(client, initialization_result)
+    if client.name == 'gopls' and not client.server_capabilities.semanticTokensProvider then
+        client.server_capabilities.semanticTokensProvider = {
+            full = true,
+            range = true,
+            legend = {
+                tokenTypes = { 'namespace', 'type', 'class', 'enum', 'interface', 'struct', 'typeParameter', 'parameter', 'variable', 'property', 'enumMember', 'event', 'function', 'method', 'macro', 'keyword', 'modifier', 'comment', 'string', 'number', 'regexp', 'operator', 'decorator' },
+                tokenModifiers = { 'declaration', 'definition', 'readonly', 'static', 'deprecated', 'abstract', 'async', 'modification', 'documentation', 'defaultLibrary'}
+            },
+        }
+    end
+end
+local on_attach = function(client, bufnr)
+    local opts = { buffer = bufnr }
+    local builtin = require('telescope.builtin')
+
+    if client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+        vim.lsp.inlay_hint(bufnr, true)
+    end
+    print(vim.inspect(client))
+    vim.notify(bufnr)
+    vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
+    vim.keymap.set('n', 'gr', builtin.lsp_references, opts)
+    vim.keymap.set('n', 'gd', builtin.lsp_definitions, opts)
+    vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
+    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
+    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
+    if client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+        local lsp_references_au_id = vim.api.nvim_create_augroup("LSP_document_highlight", { clear = false })
+        vim.api.nvim_clear_autocmds({
+            buffer = bufnr,
+            group = lsp_references_au_id,
+        })
+        vim.api.nvim_create_autocmd("CursorHold", {
+            callback = function() vim.lsp.buf.document_highlight() end,
+            buffer = bufnr,
+            group = lsp_references_au_id,
+            desc = "LSP document highlight",
+        })
+        vim.api.nvim_create_autocmd({ "CursorMoved", "WinLeave" }, {
+            callback = function() vim.lsp.buf.clear_references() end,
+            buffer = bufnr,
+            group = lsp_references_au_id,
+            desc = "Clear LSP document highlight",
+        })
+    end
 end
 
-local config = function()
-    local lspconfig = require('lspconfig')
-    local lsp_status = require('lsp-status')
-    require("neodev").setup({})
+local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
 
-    clangd_options.handlers = lsp_status.extensions.clangd.setup()
+local servers = {
+    "clangd",
+    "gopls",
+    "lua_ls",
+}
 
-    clangd_options = update_option(clangd_options)
-    lua_ls_options = update_option(lua_ls_options)
-    gopls_options = update_option(gopls_options)
-    lspconfig.clangd.setup {clangd_options}
-    lspconfig.gopls.setup {gopls_options}
-    lspconfig.lua_ls.setup {lua_ls_options}
+local lsp_config = function()
+    local lspconfig = require("lspconfig")
+    for _, server in ipairs(servers) do
+        lspconfig[server].setup({
+            on_init = function(client, initialization_result)
+                vim.inspect(client)
+                vim.inspect(initialization_result)
+            end,
+            on_attach = function(client, bufnr)
+                vim.inspect(client)
+                vim.inspect(bufnr)
+            end,
+        })
+    end
 end
-
 return {
     'neovim/nvim-lspconfig', -- Required
-    config = config,
+    config = lsp_config,
     dependencies = {
         { 'hrsh7th/nvim-cmp' },
         { 'hrsh7th/cmp-nvim-lsp' },
