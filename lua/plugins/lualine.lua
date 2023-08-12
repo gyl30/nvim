@@ -1,36 +1,51 @@
+local navic = require("nvim-navic")
+
 local colors = {
-  yellow = '#ECBE7B',
-  cyan = '#008080',
-  darkblue = '#081633',
-  green = '#98be65',
-  orange = '#FF8800',
-  violet = '#a9a1e1',
-  magenta = '#c678dd',
-  blue = '#51afef',
-  red = '#ec5f67'
+    yellow = '#ECBE7B',
+    cyan = '#008080',
+    darkblue = '#081633',
+    green = '#98be65',
+    orange = '#FF8800',
+    violet = '#a9a1e1',
+    magenta = '#c678dd',
+    blue = '#51afef',
+    red = '#ec5f67'
 }
 
 local opts = {
     options = {
-        component_separators = { left = '', right = ''},
-        section_separators = { left = '', right = ''},
+        theme = 'dracula-nvim',
+        component_separators = { left = '', right = '' },
+        section_separators = { left = '', right = '' },
         globalstatus = true,
         disabled_filetypes = { statusline = { "dashboard", "alpha" } },
     },
+    winbar = {
+        lualine_x = {
+            {
+                function()
+                    return navic.get_location()
+                end,
+                cond = function()
+                    return navic.is_available()
+                end
+            },
+        }
+    },
     sections = {
         lualine_a = { "mode" },
-        lualine_b = {'branch', 'diff', 'diagnostics'},
+        lualine_b = { 'branch', 'diff', 'diagnostics' },
         lualine_c = {
             {
                 "filetype",
                 icon_only = true,
                 separator = "",
                 padding = {
-                left = 1, right = 0 }
+                    left = 1, right = 0 }
             },
             { "filename", path = 1, symbols = { modified = "  ", readonly = "", unnamed = "" } },
             {
-              
+
             }
         },
         lualine_x = {
@@ -54,7 +69,7 @@ local opts = {
             'encoding',
         },
         lualine_y = {
-            { "progress", separator = " ", padding = { left = 1, right = 0 } },
+            { "progress", separator = " ",                  padding = { left = 1, right = 0 } },
             { "location", padding = { left = 0, right = 1 } },
         },
         lualine_z = {
@@ -63,11 +78,13 @@ local opts = {
             end,
         },
     },
-    extensions = { "neo-tree", "lazy" },
 }
 return {
     "nvim-lualine/lualine.nvim",
-    dependencies = {'nvim-lua/lsp-status.nvim'},
+    dependencies = {
+        'nvim-lua/lsp-status.nvim',
+        'SmiteshP/nvim-navic',
+    },
     event = "VeryLazy",
     opts = opts,
 }
