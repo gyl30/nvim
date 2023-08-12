@@ -39,7 +39,6 @@ local on_attach = function(client, bufnr)
     end
     if client.server_capabilities.documentSymbolProvider then
         require("nvim-navic").attach(client, bufnr)
-        vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     end
     --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
