@@ -40,6 +40,7 @@ local on_attach = function(client, bufnr)
     if client.server_capabilities.documentSymbolProvider then
         require("nvim-navic").attach(client, bufnr)
     end
+    require("symbols-outline").setup()
     --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
     buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -51,8 +52,8 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
     vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
     vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
-    vim.keymap.set('n', '<space>d', "<cmd>Lspsaga show_buf_diagnostics<CR>", opts)
-    vim.keymap.set('n', '<space>o', "<cmd>Lspsaga outline<CR>", opts)
+    vim.keymap.set('n', '<space>d', builtin.diagnostics, opts)
+    vim.keymap.set('n', '<space>o', "<cmd>SymbolsOutline<CR>", opts)
 
     vim.api.nvim_create_autocmd("CursorHold,CursorHoldI,InsertLeave", {
         callback = function() vim.api.nvim_command "silent! vim.lsp.codelens.refresh()" end,
@@ -76,9 +77,22 @@ local lua_ls_options = {
     on_init = on_init,
     settings = {
         Lua = {
+            telemetry = { enable = false },
+            runtime = {
+                version = "LuaJIT",
+                special = {
+                    reload = "require",
+                },
+            },
+            diagnostics = {
+                globals = { "vim", "reload" },
+            },
             completion = {
                 callSnippet = "Replace"
-            }
+            },
+            workspace = {
+                checkThirdParty = false,
+            },
         }
     }
 }
@@ -190,6 +204,7 @@ return {
         { 'nvim-lua/lsp-status.nvim' },
         { 'p00f/clangd_extensions.nvim' },
         { 'Civitasv/cmake-tools.nvim' },
+        { 'simrat39/symbols-outline.nvim' },
         {
             'SmiteshP/nvim-navic',
             event = { "BufReadPre", "BufNewFile" },
