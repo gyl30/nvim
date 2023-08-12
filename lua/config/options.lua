@@ -1,5 +1,4 @@
 vim.opt.fileencodings = 'utf8,ucs-bom,gbk,cp936,gb2312,gb18030'
-vim.opt.fileencoding = 'utf-8'
 vim.opt.termguicolors = true
 vim.opt.number = true
 vim.opt.showcmd = false
