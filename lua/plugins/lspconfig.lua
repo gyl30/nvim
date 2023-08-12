@@ -41,6 +41,8 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
     vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
     vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
+--    vim.keymap.set('n', '<space>d', "<cmd>Lspsaga show_buf_diagnostics<CR>", opts)
+--    vim.keymap.set('n', '<space>o', "<cmd>Lspsaga outline<CR>", opts)
 end
 
 local lua_ls_options = {

@@ -1,5 +1,5 @@
 vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.maplocalleader = ';'
 require("config.keymaps")
 require("config.plugin")
 require("config.theme")
