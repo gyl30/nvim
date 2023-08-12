@@ -1,4 +1,5 @@
 {
+  "Comment.nvim": { "branch": "master", "commit": "0236521ea582747b58869cb72f70ccfa967d2e89" },
   "DoxygenToolkit.vim": { "branch": "master", "commit": "afd8663d36d2ec19d26befdb10e89e912d26bbd3" },
   "LeaderF": { "branch": "master", "commit": "6a4e01d85337c781cf6fe37e19f87e41869adfad" },
   "LuaSnip": { "branch": "master", "commit": "99a94cc35ec99bf06263d0346128e908a204575c" },
@@ -18,8 +19,8 @@
   "lsp-status.nvim": { "branch": "master", "commit": "54f48eb5017632d81d0fd40112065f1d062d0629" },
   "lspkind.nvim": { "branch": "master", "commit": "57610d5ab560c073c465d6faf0c19f200cb67e6e" },
   "lualine.nvim": { "branch": "master", "commit": "45e27ca739c7be6c49e5496d14fcf45a303c3a63" },
-  "neodev.nvim": { "branch": "main", "commit": "81a893eb94d502b2cbb08ed3871eeaadfd240131" },
-  "nerdcommenter": { "branch": "master", "commit": "ab2ae4d502a26bc591db78a8548823ddd04bbc9c" },
+  "mini.indentscope": { "branch": "main", "commit": "f60e9b51a6214c73a170ffc5445ce91560981031" },
+  "neodev.nvim": { "branch": "main", "commit": "9a5c0f0de5c15fba52d4fb83d425d3f4fa7abfa1" },
   "nvim-autopairs": { "branch": "master", "commit": "ae5b41ce880a6d850055e262d6dfebd362bb276e" },
   "nvim-bufferline.lua": { "branch": "main", "commit": "417b303328118b6d836ae330142e88771c48a8a3" },
   "nvim-cmp": { "branch": "main", "commit": "51f1e11a89ec701221877532ee1a23557d291dd5" },

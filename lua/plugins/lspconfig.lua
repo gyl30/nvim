@@ -192,6 +192,7 @@ return {
         { 'Civitasv/cmake-tools.nvim' },
         {
             'SmiteshP/nvim-navic',
+            event = { "BufReadPre", "BufNewFile" },
             config = function()
                 require("nvim-navic").setup()
             end

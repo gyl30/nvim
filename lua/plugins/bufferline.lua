@@ -24,7 +24,7 @@ end
 
 return {
     "akinsho/nvim-bufferline.lua",
-    event = "VeryLazy",
+    event = { "BufReadPre", "BufNewFile" },
     init = bufferline_init,
     config = bufferline_cfg,
 }
