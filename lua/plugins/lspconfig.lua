@@ -14,6 +14,7 @@ vim.diagnostic.config {
         prefix = "",
     },
 }
+
 local on_attach = function(client, bufnr)
     require('lsp-status').on_attach(client)
     if client.server_capabilities.semanticTokensProvider then
@@ -26,6 +27,9 @@ local on_attach = function(client, bufnr)
         })
         --vim.notify(client.name .. " semantic tokens start client " .. client["id"] .. " on buffer " .. bufnr)
         vim.lsp.semantic_tokens.start(bufnr, client["id"], {})
+    end
+    if client.name == "clangd" then
+        require("clangd_extensions").setup()
     end
     --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
@@ -80,10 +84,29 @@ local gopls_options = {
     },
     settings = {
         gopls = {
-            analyses = {
-                unusedparams = true,
-            },
             staticcheck = true,
+            semanticTokens = true,
+            usePlaceholders = true,
+            completeUnimported = true,
+            gofumpt = true,
+            directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+            codelenses = {
+                gc_details = false,
+                generate = true,
+                regenerate_cgo = true,
+                run_govulncheck = true,
+                test = true,
+                tidy = true,
+                upgrade_dependency = true,
+                vendor = true,
+            },
+            analyses = {
+                fieldalignment = true,
+                nilness = true,
+                unusedparams = true,
+                unusedwrite = true,
+                useany = true,
+            },
             hints = {
                 assignVariableTypes = false,
                 compositeLiteralFields = false,
@@ -93,16 +116,25 @@ local gopls_options = {
                 parameterNames = false,
                 rangeVariableTypes = false,
             },
-            semanticTokens = true,
         },
     },
 }
 local clangd_options = {
     on_attach = on_attach,
     on_init = on_init,
+    on_new_config = function(new_config, new_cwd)
+        local status, cmake = pcall(require, "cmake-tools")
+        if status then
+            cmake.clangd_on_new_config(new_config)
+        end
+    end,
     settings = {
         clangd = {
-            init_options = { clangdFileStatus = true },
+            init_options = {
+                usePlaceholders = true,
+                completeUnimported = true,
+                clangdFileStatus = true,
+            },
             cmd = {
                 "clangd",
                 "--background-index",
@@ -139,12 +171,14 @@ local config = function()
 end
 
 return {
-    'neovim/nvim-lspconfig', -- Required
+    'neovim/nvim-lspconfig',
     config = config,
     dependencies = {
         { 'hrsh7th/nvim-cmp' },
         { 'hrsh7th/cmp-nvim-lsp' },
         { 'L3MON4D3/LuaSnip' },
         { 'nvim-lua/lsp-status.nvim' },
+        { 'p00f/clangd_extensions.nvim' },
+        { 'Civitasv/cmake-tools.nvim' },
     }
 }
