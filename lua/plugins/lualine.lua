@@ -67,6 +67,10 @@ local opts = {
             "require'lsp-status'.status_progress()",
             'fileformat',
             'encoding',
+            {
+                require("lazy.status").updates,
+                cond = require("lazy.status").has_updates,
+            },
         },
         lualine_y = {
             { "progress", separator = " ",                  padding = { left = 1, right = 0 } },
