@@ -1,5 +1,38 @@
 vim.lsp.set_log_level 'trace'
 require('vim.lsp.log').set_format_func(vim.inspect)
+
+local outline_symbols = {
+    File = { icon = " ", hl = "@text.uri" },
+    Module = { icon = " ", hl = "@namespace" },
+    Namespace = { icon = " ", hl = "@namespace" },
+    Package = { icon = " ", hl = "@namespace" },
+    Class = { icon = " ", hl = "@type" },
+    Method = { icon = " ", hl = "@method" },
+    Property = { icon = " ", hl = "@method" },
+    Field = { icon = " ", hl = "@field" },
+    Constructor = { icon = " ", hl = "@constructor" },
+    Enum = { icon = " ", hl = "@type" },
+    Interface = { icon = " ", hl = "@type" },
+    Function = { icon = "󰡱 ", hl = "@function" },
+    Variable = { icon = " ", hl = "@constant" },
+    Constant = { icon = " ", hl = "@constant" },
+    String = { icon = "󰅳 ", hl = "@string" },
+    Number = { icon = "󰎠 ", hl = "@number" },
+    Boolean = { icon = " ", hl = "@boolean" },
+    Array = { icon = "󰅨 ", hl = "@constant" },
+    Object = { icon = " ", hl = "@type" },
+    Key = { icon = " ", hl = "@type" },
+    Null = { icon = "󰟢 ", hl = "@type" },
+    EnumMember = { icon = " ", hl = "@field" },
+    Struct = { icon = " ", hl = "@type" },
+    Event = { icon = " ", hl = "@type" },
+    Operator = { icon = " ", hl = "@operator" },
+    TypeParameter = { icon = " ", hl = "@parameter" },
+    Component = { icon = " ", hl = "@function" },
+    Fragment = { icon = " ", hl = "@constant" },
+}
+
+
 vim.lsp.handlers['workspace/diagnostic/refresh'] = function(_, _, ctx)
     local ns = vim.lsp.diagnostic.get_namespace(ctx.client_id)
     local bufnr = vim.api.nvim_get_current_buf()
@@ -40,7 +73,11 @@ local on_attach = function(client, bufnr)
     if client.server_capabilities.documentSymbolProvider then
         require("nvim-navic").attach(client, bufnr)
     end
-    require("symbols-outline").setup()
+    require("symbols-outline").setup({
+        symbols = outline_symbols,
+        show_symbol_details = true,
+        autofold_depth = 3,
+    })
     --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
     buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
