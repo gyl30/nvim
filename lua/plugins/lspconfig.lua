@@ -1,5 +1,11 @@
 vim.lsp.set_log_level 'trace'
 require('vim.lsp.log').set_format_func(vim.inspect)
+vim.lsp.handlers['workspace/diagnostic/refresh'] = function(_, _, ctx)
+    local ns = vim.lsp.diagnostic.get_namespace(ctx.client_id)
+    local bufnr = vim.api.nvim_get_current_buf()
+    vim.diagnostic.reset(ns, bufnr)
+    return true
+end
 
 vim.diagnostic.config {
     virtual_text = false,
@@ -30,6 +36,10 @@ local on_attach = function(client, bufnr)
     end
     if client.name == "clangd" then
         require("clangd_extensions").setup()
+    end
+    if client.server_capabilities.documentSymbolProvider then
+        require("nvim-navic").attach(client, bufnr)
+        vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     end
     --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
@@ -180,5 +190,11 @@ return {
         { 'nvim-lua/lsp-status.nvim' },
         { 'p00f/clangd_extensions.nvim' },
         { 'Civitasv/cmake-tools.nvim' },
+        {
+            'SmiteshP/nvim-navic',
+            config = function()
+                require("nvim-navic").setup()
+            end
+        },
     }
 }
