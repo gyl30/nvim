@@ -14,23 +14,20 @@ vim.diagnostic.config {
         prefix = "",
     },
 }
-
-local on_init = function(client, initialize_result)
-end
-
 local on_attach = function(client, bufnr)
     require('lsp-status').on_attach(client)
-    if client.server_capabilities.semanticTokensProvider and client.server_capabilities.semanticTokensProvider.full then
-        local augroup = vim.api.nvim_create_augroup("SemanticTokens", {})
+    if client.server_capabilities.semanticTokensProvider then
         vim.api.nvim_create_autocmd("TextChanged", {
-            group = augroup,
+            group = vim.api.nvim_create_augroup("semantic_tokens", { clear = true }),
             buffer = bufnr,
             callback = function()
                 vim.lsp.semantic_tokens.force_refresh(bufnr)
             end,
         })
-        vim.lsp.semantic_tokens.start(bufnr, client)
+        --vim.notify(client.name .. " semantic tokens start client " .. client["id"] .. " on buffer " .. bufnr)
+        vim.lsp.semantic_tokens.start(bufnr, client["id"], {})
     end
+    --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
     buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
     local opts = { buffer = bufnr, noremap = true, silent = true }
@@ -41,8 +38,24 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
     vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
     vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
---    vim.keymap.set('n', '<space>d', "<cmd>Lspsaga show_buf_diagnostics<CR>", opts)
---    vim.keymap.set('n', '<space>o', "<cmd>Lspsaga outline<CR>", opts)
+    vim.keymap.set('n', '<space>d', "<cmd>Lspsaga show_buf_diagnostics<CR>", opts)
+    vim.keymap.set('n', '<space>o', "<cmd>Lspsaga outline<CR>", opts)
+
+    vim.api.nvim_create_autocmd("CursorHold,CursorHoldI,InsertLeave", {
+        callback = function() vim.api.nvim_command "silent! vim.lsp.codelens.refresh()" end,
+        buffer = bufnr,
+    })
+
+    if client.server_capabilities.documentHighlightProvider then
+        vim.api.nvim_create_autocmd("CursorMoved", {
+            callback = vim.lsp.buf.clear_references,
+            buffer = bufnr,
+        })
+        vim.api.nvim_create_autocmd("CursorHold,CursorHoldI", {
+            callback = vim.lsp.buf.document_highlight,
+            buffer = bufnr,
+        })
+    end
 end
 
 local lua_ls_options = {
