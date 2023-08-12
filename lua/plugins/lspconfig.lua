@@ -1,99 +1,131 @@
 vim.lsp.set_log_level 'trace'
 require('vim.lsp.log').set_format_func(vim.inspect)
-vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "rounded", silent = true })
-vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = "rounded", silent = true })
 
 vim.diagnostic.config {
     virtual_text = false,
     underline = false,
     update_in_insert = false,
     float = {
-      focused = false,
-      style = "minimal",
-      border = "rounded",
-      source = "always",
-      header = "",
-      prefix = "",
+        focused = false,
+        style = "minimal",
+        border = "rounded",
+        source = "always",
+        header = "",
+        prefix = "",
     },
 }
 
-
-local on_init = function(client, initialization_result)
-    if client.name == 'gopls' and not client.server_capabilities.semanticTokensProvider then
-        client.server_capabilities.semanticTokensProvider = {
-            full = true,
-            range = true,
-            legend = {
-                tokenTypes = { 'namespace', 'type', 'class', 'enum', 'interface', 'struct', 'typeParameter', 'parameter', 'variable', 'property', 'enumMember', 'event', 'function', 'method', 'macro', 'keyword', 'modifier', 'comment', 'string', 'number', 'regexp', 'operator', 'decorator' },
-                tokenModifiers = { 'declaration', 'definition', 'readonly', 'static', 'deprecated', 'abstract', 'async', 'modification', 'documentation', 'defaultLibrary'}
-            },
-        }
-    end
+local on_init = function(client, initialize_result)
 end
-local on_attach = function(client, bufnr)
-    local opts = { buffer = bufnr }
-    local builtin = require('telescope.builtin')
 
-    if client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-        vim.lsp.inlay_hint(bufnr, true)
+local on_attach = function(client, bufnr)
+    require('lsp-status').on_attach(client)
+    if client.server_capabilities.semanticTokensProvider and client.server_capabilities.semanticTokensProvider.full then
+        local augroup = vim.api.nvim_create_augroup("SemanticTokens", {})
+        vim.api.nvim_create_autocmd("TextChanged", {
+            group = augroup,
+            buffer = bufnr,
+            callback = function()
+                vim.lsp.semantic_tokens.force_refresh(bufnr)
+            end,
+        })
+        vim.lsp.semantic_tokens.start(bufnr, client)
     end
-    print(vim.inspect(client))
-    vim.notify(bufnr)
-    vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
+    local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+    buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+    local opts = { buffer = bufnr, noremap = true, silent = true }
+    local builtin = require('telescope.builtin')
     vim.keymap.set('n', 'gr', builtin.lsp_references, opts)
     vim.keymap.set('n', 'gd', builtin.lsp_definitions, opts)
     vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
     vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
     vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
-    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
     vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
-    if client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
-        local lsp_references_au_id = vim.api.nvim_create_augroup("LSP_document_highlight", { clear = false })
-        vim.api.nvim_clear_autocmds({
-            buffer = bufnr,
-            group = lsp_references_au_id,
-        })
-        vim.api.nvim_create_autocmd("CursorHold", {
-            callback = function() vim.lsp.buf.document_highlight() end,
-            buffer = bufnr,
-            group = lsp_references_au_id,
-            desc = "LSP document highlight",
-        })
-        vim.api.nvim_create_autocmd({ "CursorMoved", "WinLeave" }, {
-            callback = function() vim.lsp.buf.clear_references() end,
-            buffer = bufnr,
-            group = lsp_references_au_id,
-            desc = "Clear LSP document highlight",
-        })
-    end
 end
 
-local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
-
-local servers = {
-    "clangd",
-    "gopls",
-    "lua_ls",
+local lua_ls_options = {
+    on_attach = on_attach,
+    on_init = on_init,
+    settings = {
+        Lua = {
+            completion = {
+                callSnippet = "Replace"
+            }
+        }
+    }
+}
+local gopls_options = {
+    cmd = { "gopls", "serve" },
+    filetypes = { "go", "gomod" },
+    on_attach = on_attach,
+    on_init = on_init,
+    init_options = {
+        usePlaceholders = true,
+        completeUnimported = true,
+    },
+    settings = {
+        gopls = {
+            analyses = {
+                unusedparams = true,
+            },
+            staticcheck = true,
+            hints = {
+                assignVariableTypes = false,
+                compositeLiteralFields = false,
+                compositeLiteralTypes = false,
+                constantValues = false,
+                functionTypeParameters = false,
+                parameterNames = false,
+                rangeVariableTypes = false,
+            },
+            semanticTokens = true,
+        },
+    },
+}
+local clangd_options = {
+    on_attach = on_attach,
+    on_init = on_init,
+    settings = {
+        clangd = {
+            init_options = { clangdFileStatus = true },
+            cmd = {
+                "clangd",
+                "--background-index",
+                "--clang-tidy",
+                "--clang-tidy-checks=bugprone-*, clang-analyzer-*, google-*, modernize-*, performance-*, portability-*, readability-*, -bugprone-too-small-loop-variable, -clang-analyzer-cplusplus.NewDelete, -clang-analyzer-cplusplus.NewDeleteLeaks, -modernize-use-nodiscard, -modernize-avoid-c-arrays, -readability-magic-numbers, -bugprone-branch-clone, -bugprone-signed-char-misuse, -bugprone-unhandled-self-assignment, -clang-diagnostic-implicit-int-float-conversion, -modernize-use-auto, -modernize-use-trailing-return-type, -readability-convert-member-functions-to-static, -readability-make-member-function-const, -readability-qualified-auto, -readability-redundant-access-specifiers,",
+                "--completion-style=detailed",
+                "--cross-file-rename=true",
+                "--header-insertion=iwyu",
+                "--pch-storage=memory",
+                "--function-arg-placeholders=false",
+                "--log=verbose",
+                "--ranking-model=decision_forest",
+                "--header-insertion-decorators",
+                "-j=12",
+                "--pretty",
+            }
+        }
+    }
 }
 
-local lsp_config = function()
-    local lspconfig = require("lspconfig")
-    for _, server in ipairs(servers) do
-        lspconfig[server].setup({
-            on_init = function(client, initialization_result)
-                vim.inspect(client)
-                vim.inspect(initialization_result)
-            end,
-            on_attach = function(client, bufnr)
-                vim.inspect(client)
-                vim.inspect(bufnr)
-            end,
-        })
-    end
+local config = function()
+    require("neodev").setup({})
+    require('lsp-status').register_progress()
+    local lspconfig = require 'lspconfig'
+    local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
+    lsp_capabilities = vim.tbl_extend('force', lsp_capabilities or {}, require('lsp-status').capabilities)
+    lsp_capabilities = vim.tbl_extend('force', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
+    gopls_options.capabilities = lsp_capabilities
+    clangd_options.capabilities = lsp_capabilities
+    lua_ls_options.capabilities = lsp_capabilities
+    lspconfig.gopls.setup(gopls_options)
+    lspconfig.clangd.setup(clangd_options)
+    lspconfig.lua_ls.setup(lua_ls_options)
 end
+
 return {
     'neovim/nvim-lspconfig', -- Required
-    config = lsp_config,
+    config = config,
     dependencies = {
         { 'hrsh7th/nvim-cmp' },
         { 'hrsh7th/cmp-nvim-lsp' },
