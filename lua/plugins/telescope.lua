@@ -33,7 +33,6 @@ return {
                 winblend = 0,
                 border = {},
                 dynamic_preview_title = true,
-                -- path_display = { "tail" },
                 path_display = { 'truncate' },
                 disable_coordinates = true,
                 sorting_strategy = "ascending",
@@ -41,7 +40,6 @@ return {
                 borderchars = nil,
                 color_devicons = true,
                 set_env = { ["COLORTERM"] = "truecolor" },
-                show_line = false,
                 layout_config = {
                     prompt_position = "bottom",
                     width = 0.9,
@@ -49,39 +47,6 @@ return {
                     preview_cutoff = 1,
                     vertical = {
                         mirror = false,
-                    },
-                },
-                pickers = {
-                    lsp_references = {
-                        layout_strategy = "vertical",
-                        show_line = false,
-                        trim_text = true,
-                        include_declaration = false,
-                        layout_config = {
-                            prompt_position = "bottom",
-                            width = 0.9,
-                            height = 0.9,
-                            preview_cutoff = 1,
-                            mirror = false,
-                        },
-                    },
-                    live_grep = {
-                        layout_strategy = "vertical",
-                        layout_config = {
-                            prompt_position = "bottom",
-                            width = 0.9,
-                            height = 0.9,
-                            preview_cutoff = 1,
-                            mirror = false,
-                        },
-                    },
-                },
-                extensions = {
-                    fzf = {
-                        fuzzy = true,                   -- false will only do exact matching
-                        override_generic_sorter = true, -- override the generic sorter
-                        override_file_sorter = true,    -- override the file sorter
-                        case_mode = 'smart_case',       -- or "ignore_case" or "respect_case"
                     },
                 },
                 mappings = {
@@ -92,6 +57,40 @@ return {
                         ["<C-k>"] = actions.move_selection_previous,
                     },
                     n = { q = actions.close },
+                },
+            },
+            pickers = {
+                lsp_references = {
+                    layout_strategy = "vertical",
+                    show_line = false,
+                    trim_text = true,
+                    include_declaration = false,
+                    layout_config = {
+                        prompt_position = "bottom",
+                        width = 0.9,
+                        height = 0.9,
+                        preview_cutoff = 1,
+                        mirror = false,
+                    },
+                },
+                live_grep = {
+                    ignore_filename = true,
+                    layout_strategy = "vertical",
+                    layout_config = {
+                        prompt_position = "bottom",
+                        width = 0.9,
+                        height = 0.9,
+                        preview_cutoff = 1,
+                        mirror = false,
+                    },
+                },
+            },
+            extensions = {
+                fzf = {
+                    fuzzy = true,                   -- false will only do exact matching
+                    override_generic_sorter = true, -- override the generic sorter
+                    override_file_sorter = true,    -- override the file sorter
+                    case_mode = 'smart_case',       -- or "ignore_case" or "respect_case"
                 },
             },
         })
