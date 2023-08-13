@@ -1,16 +1,30 @@
 local navic = require("nvim-navic")
+local uv = vim.version().minor >= 10 and vim.uv or vim.loop
+local iswin = uv.os_uname().sysname:match('Windows')
+local path_sep = iswin and '\\' or '/'
 
-local colors = {
-    yellow = '#ECBE7B',
-    cyan = '#008080',
-    darkblue = '#081633',
-    green = '#98be65',
-    orange = '#FF8800',
-    violet = '#a9a1e1',
-    magenta = '#c678dd',
-    blue = '#51afef',
-    red = '#ec5f67'
-}
+local get_bufnr_icon = function(bufnr)
+    local ft = vim.bo[bufnr].filetype
+    local ok, devicons = pcall(require, 'nvim-web-devicons')
+    if not ok then
+        return ''
+    end
+    return devicons.get_icon_by_filetype(ft)
+end
+
+local get_current_file_dir_name = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local bufname = vim.api.nvim_buf_get_name(bufnr)
+    local paths = vim.split(bufname, path_sep, { trimempty = true })
+    local path_count = #paths - 1
+
+    if path_count > 0 then
+        local dir = paths[path_count]
+        local file = paths[path_count + 1]
+        local icon = get_bufnr_icon(bufnr)
+        return " " .. dir .. " › " .. icon .. " " .. file
+    end
+end
 
 local opts = {
     options = {
@@ -21,10 +35,14 @@ local opts = {
         disabled_filetypes = { statusline = { "dashboard", "alpha" } },
     },
     winbar = {
-        lualine_x = {
+        lualine_b = {
             {
                 function()
-                    return navic.get_location()
+                    local location = navic.get_location()
+                    if #location > 0 then
+                        return get_current_file_dir_name() .. " › " .. location
+                    end
+                    return get_current_file_dir_name()
                 end,
                 cond = function()
                     return navic.is_available()
