@@ -4,6 +4,7 @@
   "LeaderF": { "branch": "master", "commit": "6a4e01d85337c781cf6fe37e19f87e41869adfad" },
   "LuaSnip": { "branch": "master", "commit": "99a94cc35ec99bf06263d0346128e908a204575c" },
   "actions-preview.nvim": { "branch": "master", "commit": "3776eb09fc356b9afc3258b741b046d586d2736e" },
+  "aerial.nvim": { "branch": "master", "commit": "bb2cc2fbf0f5be6ff6cd7e467c7c6b02860f3c7b" },
   "alpha-nvim": { "branch": "main", "commit": "e4fc5e29b731bdf55d204c5c6a11dc3be70f3b65" },
   "asyncrun.vim": { "branch": "master", "commit": "0f99f96b1a408c37ea6f78e5990554328bc22dd1" },
   "asynctasks.vim": { "branch": "master", "commit": "12f44e6a00f7fded4f60fe9c91fad507bf8abbb6" },
