@@ -4,6 +4,7 @@ return {
         'nvim-lua/plenary.nvim',
         "debugloop/telescope-undo.nvim",
         "nvim-telescope/telescope-file-browser.nvim",
+        'GustavoKatel/telescope-asynctasks.nvim',
         {
             "nvim-telescope/telescope-fzf-native.nvim",
             build = "make",
@@ -99,5 +100,6 @@ return {
         require('telescope').load_extension('undo')
         require('telescope').load_extension("file_browser")
         require('telescope').load_extension('aerial')
+        require('telescope').load_extension("asynctasks")
     end,
 }

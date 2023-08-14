@@ -6,3 +6,9 @@ vim.cmd [[
     nnoremap <C-k> <C-w>k
     nnoremap <leader>q :q!<CR>
 ]]
+
+
+local opts = { noremap = true, silent = true }
+
+vim.keymap.set('n', '<C-r>', "<cmd>Telescope asynctasks all<cr>", opts)
+
