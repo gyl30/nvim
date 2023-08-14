@@ -144,6 +144,5 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set("n", "S", vim.lsp.buf.signature_help, opts)
         vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
         vim.keymap.set('n', '<space>d', builtin.diagnostics, opts)
-        vim.keymap.set('n', '<space>o', "<cmd>SymbolsOutline<CR>", opts)
     end,
 })

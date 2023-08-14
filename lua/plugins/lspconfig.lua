@@ -227,7 +227,19 @@ return {
         { 'L3MON4D3/LuaSnip' },
         { 'p00f/clangd_extensions.nvim' },
         { 'Civitasv/cmake-tools.nvim' },
-        { 'simrat39/symbols-outline.nvim' },
+        {
+            'simrat39/symbols-outline.nvim',
+            cmd = { 'SymbolsOutline', 'SymbolsOutlineOpen' },
+            keys = {
+                {
+                    '<Leader>o',
+                    mode = { 'n' },
+                    silent = true,
+                    '<cmd>SymbolsOutline<CR>',
+                    desc = 'Symbols Outline'
+                },
+            },
+        },
         {
             'aznhe21/actions-preview.nvim',
             event = "LspAttach",
