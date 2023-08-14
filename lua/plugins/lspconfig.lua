@@ -72,24 +72,14 @@ local on_attach = function(client, bufnr)
     if client.server_capabilities.documentSymbolProvider then
         require("nvim-navic").attach(client, bufnr)
     end
+
     require("symbols-outline").setup({
         symbols = outline_symbols,
         show_symbol_details = true,
         autofold_depth = 3,
     })
     --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
-    local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
-    buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
-    local opts = { buffer = bufnr, noremap = true, silent = true }
-    local builtin = require('telescope.builtin')
-    vim.keymap.set('n', 'gr', builtin.lsp_references, opts)
-    vim.keymap.set('n', 'gd', builtin.lsp_definitions, opts)
-    vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
-    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
-    vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
-    vim.keymap.set('n', '<space>d', builtin.diagnostics, opts)
-    vim.keymap.set('n', '<space>o', "<cmd>SymbolsOutline<CR>", opts)
+    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
     vim.api.nvim_create_autocmd("CursorHold,CursorHoldI,InsertLeave", {
         callback = function() vim.api.nvim_command "silent! vim.lsp.codelens.refresh()" end,

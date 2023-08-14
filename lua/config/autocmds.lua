@@ -104,28 +104,46 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 
 vim.api.nvim_create_autocmd("CursorHold", {
     callback = function()
-        vim.signcolumn="no"
-        vim.diagnostic.open_float(nil, {show_header = false, severity_sort = true, scope = "line", focusable = false })
+        vim.signcolumn = "no"
+        vim.diagnostic.open_float(nil, { show_header = false, severity_sort = true, scope = "line", focusable = false })
     end,
 })
 
 vim.api.nvim_create_autocmd('BufWritePre', {
-  pattern = '*.go',
-  callback = function()
-    vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })
-  end
+    pattern = '*.go',
+    callback = function()
+        vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })
+    end
 })
 
 local lsp_cli_name = function()
     local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
-        local clients = vim.lsp.get_active_clients()
-        if next(clients) == nil then
-            return nil
-        end
-        for _, client in ipairs(clients) do
-            local filetypes = client.config.filetypes
-            if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-                return client.name
+    local clients = vim.lsp.get_active_clients()
+    if next(clients) == nil then
+        return nil
+    end
+    for _, client in ipairs(clients) do
+        local filetypes = client.config.filetypes
+        if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
+            return client.name
         end
     end
 end
+
+
+------------------------------------------ LSP KEYMAP ----------------------------------------------
+vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("user_lsp_config", {}),
+    callback = function(ev)
+        local opts = { buffer = ev.buf, noremap = true, silent = true }
+        local builtin = require('telescope.builtin')
+        vim.keymap.set('n', 'gr', builtin.lsp_references, opts)
+        vim.keymap.set('n', 'gd', builtin.lsp_definitions, opts)
+        vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
+        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+        vim.keymap.set("n", "S", vim.lsp.buf.signature_help, opts)
+        vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
+        vim.keymap.set('n', '<space>d', builtin.diagnostics, opts)
+        vim.keymap.set('n', '<space>o', "<cmd>SymbolsOutline<CR>", opts)
+    end,
+})
