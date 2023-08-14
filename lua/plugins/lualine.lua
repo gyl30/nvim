@@ -28,13 +28,56 @@ local get_current_file_dir_name = function()
     end
 end
 
+local function lsp_icon()
+    return require("lsp-progress").progress({
+        format = function(messages)
+            if #messages > 0 then
+                return ""
+            end
+            local msg = 'No Active Lsp'
+            local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
+            local clients = vim.lsp.get_active_clients()
+            if next(clients) == nil then
+                return msg
+            end
+            for _, client in ipairs(clients) do
+                local filetypes = client.config.filetypes
+                local name = string.find(client.name, '_') ~= nil and string.upper(client.name) or client.name
+                name = string.find(name, '-') ~= nil and string.upper(name) or name
+                if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
+                    return " " .. name
+                end
+            end
+            return msg
+        end,
+    })
+end
+
+local function lsp_message()
+    return require("lsp-progress").progress({
+        format = function(messages)
+            return #messages > 0 and table.concat(messages, " ") or ""
+        end,
+    })
+end
+
+local client_format = function(client_name, spinner, series_messages)
+    client_name = string.find(client_name, '_') ~= nil and string.upper(client_name) or client_name
+    return #series_messages > 0
+        and (" " .. client_name .. " " .. spinner .. " " .. table.concat(
+            series_messages,
+            ", "
+        ))
+        or nil
+end
+
 local opts = {
     options = {
         theme = 'dracula-nvim',
         component_separators = { left = '', right = '' },
         section_separators = { left = '', right = '' },
         globalstatus = true,
-        disabled_filetypes = { statusline = { "dashboard", "alpha" } },
+        disabled_filetypes = { statusline = { "dashboard", "alpha", "lazy" } },
     },
     winbar = {
         lualine_b = {
@@ -64,28 +107,10 @@ local opts = {
                     left = 1, right = 0 }
             },
             { "filename", path = 1, symbols = { modified = "  ", readonly = "", unnamed = "" } },
-            {
-                "require'lsp-status'.status_progress()",
-            }
         },
         lualine_x = {
-            function()
-                local msg = 'No Active Lsp'
-                local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
-                local clients = vim.lsp.get_active_clients()
-                if next(clients) == nil then
-                    return msg
-                end
-                for _, client in ipairs(clients) do
-                    local filetypes = client.config.filetypes
-                    local name = string.find(client.name, '_') ~= nil and string.upper(client.name) or client.name
-                    name = string.find(name, '-') ~= nil and string.upper(name) or name
-                    if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-                        return " " .. name
-                    end
-                end
-                return msg
-            end,
+            lsp_icon,
+            lsp_message,
             'fileformat',
             'encoding',
             {
@@ -104,11 +129,23 @@ local opts = {
         },
     },
 }
+
 return {
     "nvim-lualine/lualine.nvim",
     dependencies = {
-        'nvim-lua/lsp-status.nvim',
         'SmiteshP/nvim-navic',
+        {
+            'linrongbin16/lsp-progress.nvim',
+            config = function()
+                require('lsp-progress').setup({
+                    client_format = client_format,
+                })
+                vim.api.nvim_create_autocmd("User LspProgressStatusUpdated", {
+                    group = vim.api.nvim_create_augroup("lualine_augroup", { clear = true }),
+                    callback = require("lualine").refresh,
+                })
+            end
+        },
     },
     event = "VeryLazy",
     opts = opts,

@@ -55,7 +55,6 @@ vim.diagnostic.config {
 }
 
 local on_attach = function(client, bufnr)
-    require('lsp-status').on_attach(client)
     if client.server_capabilities.semanticTokensProvider then
         vim.api.nvim_create_autocmd("TextChanged", {
             group = vim.api.nvim_create_augroup("semantic_tokens", { clear = true }),
@@ -217,10 +216,8 @@ local clangd_options = {
 
 local config = function()
     require("neodev").setup({})
-    require('lsp-status').register_progress()
     local lspconfig = require 'lspconfig'
     local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
-    lsp_capabilities = vim.tbl_extend('force', lsp_capabilities or {}, require('lsp-status').capabilities)
     lsp_capabilities = vim.tbl_extend('force', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
     gopls_options.capabilities = lsp_capabilities
     clangd_options.capabilities = lsp_capabilities
@@ -238,7 +235,6 @@ return {
         { 'hrsh7th/nvim-cmp' },
         { 'hrsh7th/cmp-nvim-lsp' },
         { 'L3MON4D3/LuaSnip' },
-        { 'nvim-lua/lsp-status.nvim' },
         { 'p00f/clangd_extensions.nvim' },
         { 'Civitasv/cmake-tools.nvim' },
         { 'simrat39/symbols-outline.nvim' },
