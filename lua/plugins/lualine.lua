@@ -65,7 +65,7 @@ local opts = {
             },
             { "filename", path = 1, symbols = { modified = "  ", readonly = "", unnamed = "" } },
             {
-
+                "require'lsp-status'.status_progress()",
             }
         },
         lualine_x = {
@@ -79,12 +79,11 @@ local opts = {
                 for _, client in ipairs(clients) do
                     local filetypes = client.config.filetypes
                     if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-                        return client.name
+                        return " " .. string.upper(client.name)
                     end
                 end
                 return msg
             end,
-            "require'lsp-status'.status_progress()",
             'fileformat',
             'encoding',
             {
