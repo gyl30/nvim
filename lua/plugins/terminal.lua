@@ -15,5 +15,8 @@ return {
         vim.g.floaterm_height = 0.85
         vim.g.floaterm_title = ''
         vim.g.floaterm_titleposition = 'center'
+    end,
+    config = function()
+        vim.keymap.set('t', '<ESC>', '<cmd>FloatermToggle<cr>', { noremap = true })
     end
 }
