@@ -18,6 +18,7 @@ return {
                 "null-ls-info",
                 "starter",
                 "toggleterm",
+                'floaterm',
                 "Trouble",
                 "undotree",
             },
