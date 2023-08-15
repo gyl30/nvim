@@ -6,7 +6,16 @@ return {
             '<leader>ft',
             mode = { 'n' },
             silent = true,
-            '<cmd>FloatermToggle<cr>',
+            function()
+                local current_floatterm_bufnr = vim.fn['floaterm#buflist#curr']()
+                if current_floatterm_bufnr == -1 then
+                    -- 新建终端
+                    vim.cmd('FloatermNew --cwd=<root>')
+                else
+                    -- 复用已经存在的终端
+                    vim.cmd { cmd = 'FloatermToggle', args = { tostring(current_floatterm_bufnr) } }
+                end
+            end,
             desc = 'Floating Terminal'
         },
     },
