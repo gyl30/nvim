@@ -50,7 +50,7 @@ local config = function()
     vim.keymap.set('n', '<tab>',
         function() return ('<Plug>(cokeline-focus-%s)'):format(vim.v.count > 0 and vim.v.count or 'next') end, opt)
     for i = 1, 9 do
-        vim.api.nvim_set_keymap("n", ("<localleader>%s"):format(i), ("<Plug>(cokeline-focus-%s)"):format(i), opt)
+        vim.api.nvim_set_keymap("n", ("<localleader>%s"):format(i), ("<Plug>(cokeline-focus-%s)"):format(i), { silent = true })
     end
 end
 return {
