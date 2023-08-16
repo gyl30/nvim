@@ -79,22 +79,6 @@ local opts = {
         globalstatus = true,
         disabled_filetypes = { statusline = { "dashboard", "alpha", "lazy" } },
     },
-    winbar = {
-        lualine_b = {
-            {
-                function()
-                    local location = navic.get_location()
-                    if #location > 0 then
-                        return get_current_file_dir_name() .. " › " .. location
-                    end
-                    return get_current_file_dir_name()
-                end,
-                cond = function()
-                    return navic.is_available()
-                end
-            },
-        }
-    },
     sections = {
         lualine_a = { "mode" },
         lualine_b = { 'branch', 'diff', 'diagnostics' },
