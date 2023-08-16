@@ -13,7 +13,7 @@ local config = function()
 
         components = {
             {
-                text = function(buffer) return (buffer.index ~= 1) and '▏' or '' end,
+                text = function(buffer) return (buffer.index ~= 1) and '' or '' end,
                 fg = get_hex('Normal', 'fg')
             },
             {
@@ -30,16 +30,8 @@ local config = function()
             },
 
             {
-                text = function(buffer) return buffer.filename .. '  ' end,
+                text = function(buffer) return buffer.filename end,
                 style = function(buffer) return buffer.is_focused and 'bold' or nil end,
-            },
-            {
-                text = '',
-                on_click = function(buffer)
-                    buffer:delete()
-                end,
-                on_mouse_enter = function() vim.opt.mouse = 'a' end,
-                on_mouse_enter = function() vim.opt.mouse = '' end,
             },
             {
                 text = '  ',
