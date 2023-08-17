@@ -64,7 +64,7 @@ local on_attach = function(client, bufnr)
             end,
         })
         --vim.notify(client.name .. " semantic tokens start client " .. client["id"] .. " on buffer " .. bufnr)
-        vim.lsp.semantic_tokens.start(bufnr, client["id"], {})
+        -- vim.lsp.semantic_tokens.start(bufnr, client["id"], {})
     end
     if client.name == "clangd" then
         require("clangd_extensions").setup()
