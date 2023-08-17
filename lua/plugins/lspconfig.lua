@@ -69,9 +69,6 @@ local on_attach = function(client, bufnr)
     if client.name == "clangd" then
         require("clangd_extensions").setup()
     end
-    if client.server_capabilities.documentSymbolProvider then
-        require("nvim-navic").attach(client, bufnr)
-    end
 
     require("symbols-outline").setup({
         symbols = outline_symbols,
@@ -261,46 +258,6 @@ return {
                         },
                     },
                 }
-            end
-        },
-        {
-            'SmiteshP/nvim-navic',
-            event = "LspAttach",
-            config = function()
-                require("nvim-navic").setup({
-                    lsp = {
-                        auto_attach = true,
-                    },
-                    separator = " › ",
-                    icons = {
-                        File = ' ',
-                        Module = ' ',
-                        Namespace = ' ',
-                        Package = ' ',
-                        Class = ' ',
-                        Method = ' ',
-                        Property = ' ',
-                        Field = ' ',
-                        Constructor = ' ',
-                        Enum = ' ',
-                        Interface = ' ',
-                        Function = ' ',
-                        Variable = ' ',
-                        Constant = ' ',
-                        String = ' ',
-                        Number = ' ',
-                        Boolean = ' ',
-                        Array = ' ',
-                        Object = ' ',
-                        Key = ' ',
-                        Null = ' ',
-                        EnumMember = ' ',
-                        Struct = ' ',
-                        Event = ' ',
-                        Operator = ' ',
-                        TypeParameter = ' '
-                    }
-                })
             end
         },
     }

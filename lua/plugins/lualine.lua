@@ -1,32 +1,7 @@
-local navic = require("nvim-navic")
 local uv = vim.version().minor >= 10 and vim.uv or vim.loop
 local iswin = uv.os_uname().sysname:match('Windows')
 local path_sep = iswin and '\\' or '/'
 
-local trim_or_nil = function(str) return type(str) == "string" and vim.trim(str) or nil end
-
-local get_bufnr_icon = function(bufnr)
-    local ft = vim.bo[bufnr].filetype
-    local ok, devicons = pcall(require, 'nvim-web-devicons')
-    if not ok then
-        return ''
-    end
-    return devicons.get_icon_by_filetype(ft)
-end
-
-local get_current_file_dir_name = function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local bufname = vim.api.nvim_buf_get_name(bufnr)
-    local paths = vim.split(bufname, path_sep, { trimempty = true })
-    local path_count = #paths - 1
-
-    if path_count > 0 then
-        local dir = paths[path_count]
-        local file = paths[path_count + 1]
-        local icon = get_bufnr_icon(bufnr)
-        return trim_or_nil(" " .. dir .. " › " .. icon .. " " .. file)
-    end
-end
 
 local function lsp_icon()
     return require("lsp-progress").progress({
@@ -117,7 +92,6 @@ local opts = {
 return {
     "nvim-lualine/lualine.nvim",
     dependencies = {
-        'SmiteshP/nvim-navic',
         {
             'linrongbin16/lsp-progress.nvim',
             config = function()
