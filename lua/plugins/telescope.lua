@@ -12,17 +12,6 @@ return {
                 return vim.fn.executable("make") == 1
             end,
         },
-        {
-            'stevearc/aerial.nvim',
-            event = "LspAttach",
-            config = function()
-                require('aerial').setup()
-            end,
-            dependencies = {
-                "nvim-tree/nvim-web-devicons"
-            },
-        },
-
     },
     cmd = "Telescope",
     config = function()
@@ -99,7 +88,6 @@ return {
         require('telescope').load_extension('fzf')
         require('telescope').load_extension('undo')
         require('telescope').load_extension("file_browser")
-        require('telescope').load_extension('aerial')
         require('telescope').load_extension("asynctasks")
     end,
 }
