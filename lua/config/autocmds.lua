@@ -102,12 +102,24 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     end,
 })
 
--- vim.api.nvim_create_autocmd("CursorHold", {
---     callback = function()
---         vim.signcolumn = "no"
---         vim.diagnostic.open_float(nil, { show_header = false, severity_sort = true, scope = "line", focusable = false })
---     end,
--- })
+vim.api.nvim_create_autocmd("CursorHold", {
+    callback = function()
+        vim.signcolumn = "no"
+        vim.diagnostic.open_float(nil, { show_header = false, severity_sort = true, scope = "line", focusable = false })
+    end,
+})
+
+local opts = { noremap = true, silent = true }
+
+local function quickfix()
+    vim.lsp.buf.code_action({
+        filter = function(a) return a.isPreferred end,
+        apply = true
+    })
+end
+
+vim.keymap.set('n', '<leader>qf', quickfix, opts)
+
 vim.api.nvim_create_autocmd("BufWritePre", {
     pattern = '*',
     callback = function()
@@ -160,7 +172,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set('n', 'gr', builtin.lsp_references, opts)
         vim.keymap.set('n', 'gd', builtin.lsp_definitions, opts)
         vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
-        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+        vim.keymap.set("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", opts)
         vim.keymap.set("n", "S", vim.lsp.buf.signature_help, opts)
         vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
         vim.keymap.set('n', '<space>d', "<cmd>Lspsaga show_buf_diagnostics<cr>", opts)
