@@ -1,9 +1,10 @@
 return {
     'nvimdev/lspsaga.nvim',
+    event = "LspAttach",
     config = function()
         require('lspsaga').setup({
-            diagnostic = {
-                diagnostic_only_current = true,
+            symbol_in_winbar = {
+                hide_keyword = true,
             },
         })
     end,
