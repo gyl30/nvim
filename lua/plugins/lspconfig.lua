@@ -225,6 +225,12 @@ return {
         { 'p00f/clangd_extensions.nvim' },
         { 'Civitasv/cmake-tools.nvim' },
         {
+            'ray-x/lsp_signature.nvim',
+            config = function()
+                require 'lsp_signature'.setup()
+            end
+        },
+        {
             'simrat39/symbols-outline.nvim',
             cmd = { 'SymbolsOutline', 'SymbolsOutlineOpen' },
             keys = {
