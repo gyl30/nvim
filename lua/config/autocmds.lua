@@ -174,7 +174,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
         vim.keymap.set("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", opts)
         vim.keymap.set("n", "S", vim.lsp.buf.signature_help, opts)
-        vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
         vim.keymap.set('n', '<space>d', "<cmd>Lspsaga show_buf_diagnostics<cr>", opts)
         vim.keymap.set('n', '<space>m', "cmd>Telescope man_pages sections={\"ALL\"}<cr>", opts)
     end,
