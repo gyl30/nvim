@@ -120,7 +120,7 @@ end
 vim.keymap.set('n', '<leader>qf', quickfix, { noremap = true, silent = true })
 
 vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = { '*.c', '*.cpp', '*.lua' },
+    pattern = { '*.c', '*.cpp', '*.h', '*.hpp', '*.cc', '*.lua' },
     callback = function()
         local bufnr = vim.api.nvim_get_current_buf()
         local clients = vim.lsp.get_active_clients({
