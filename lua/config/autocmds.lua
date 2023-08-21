@@ -109,7 +109,6 @@ vim.api.nvim_create_autocmd("CursorHold", {
     end,
 })
 
-local opts = { noremap = true, silent = true }
 
 local function quickfix()
     vim.lsp.buf.code_action({
@@ -118,10 +117,10 @@ local function quickfix()
     })
 end
 
-vim.keymap.set('n', '<leader>qf', quickfix, opts)
+vim.keymap.set('n', '<leader>qf', quickfix, { noremap = true, silent = true })
 
 vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = { 'c', 'cpp', 'lua' },
+    pattern = { '*.c', '*.cpp', '*.lua' },
     callback = function()
         local bufnr = vim.api.nvim_get_current_buf()
         local clients = vim.lsp.get_active_clients({
