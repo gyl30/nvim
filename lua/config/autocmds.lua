@@ -121,9 +121,12 @@ end
 vim.keymap.set('n', '<leader>qf', quickfix, opts)
 
 vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = '*',
+    pattern = { 'c', 'cpp', 'lua' },
     callback = function()
-        local clients = vim.lsp.buf_get_clients()
+        local bufnr = vim.api.nvim_get_current_buf()
+        local clients = vim.lsp.get_active_clients({
+            bufnr = bufnr,
+        })
         if #clients > 0 then
             vim.lsp.buf.format({ timeout_ms = 3000, async = false, })
         end
@@ -147,21 +150,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
         end
     end,
 })
-
-local lsp_cli_name = function()
-    local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
-    local clients = vim.lsp.get_active_clients()
-    if next(clients) == nil then
-        return nil
-    end
-    for _, client in ipairs(clients) do
-        local filetypes = client.config.filetypes
-        if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-            return client.name
-        end
-    end
-end
-
 
 ------------------------------------------ LSP KEYMAP ----------------------------------------------
 vim.api.nvim_create_autocmd("LspAttach", {
