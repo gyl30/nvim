@@ -109,7 +109,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
     end,
 })
 
-
+------------------------------------------ LSP CODEACTION ----------------------------------------------
 local function quickfix()
     vim.lsp.buf.code_action({
         filter = function(a) return a.isPreferred end,
@@ -119,25 +119,28 @@ end
 
 vim.keymap.set('n', '<leader>qf', quickfix, { noremap = true, silent = true })
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = { '*.c', '*.cpp', '*.h', '*.hpp', '*.cc', '*.lua' },
-    callback = function()
-        local bufnr = vim.api.nvim_get_current_buf()
-        local clients = vim.lsp.get_active_clients({
-            bufnr = bufnr,
-        })
-        if #clients > 0 then
-            vim.lsp.buf.format({ timeout_ms = 3000, async = false, })
-        end
-    end,
-})
+------------------------------------------ LSP AUTOFORMAT ----------------------------------------------
+local lsp_autoformat = function(client_id, client_name, bufnr)
+    vim.api.nvim_create_autocmd("BufWritePre", {
+        group = vim.api.nvim_create_augroup(client_name .. "_autoformat", { clear = true }),
+        buffer = bufnr,
+        callback = function()
+            vim.lsp.buf.format {
+                async = false,
+                filter = function(c)
+                    return c.id == client_id
+                end,
+            }
+        end,
+    })
+end
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = { "*.go" },
-    callback = function()
+-- https://github.com/neovim/nvim-lspconfig/issues/115
+local gopls_enable_autoformat = function(bufnr)
+    local format_func = function()
         local params = vim.lsp.util.make_range_params(nil, vim.lsp.util._get_offset_encoding())
         params.context = { only = { "source.organizeImports" } }
-        local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 3000)
+        local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 3000)
         for _, res in pairs(result or {}) do
             for _, r in pairs(res.result or {}) do
                 if r.edit then
@@ -147,8 +150,15 @@ vim.api.nvim_create_autocmd("BufWritePre", {
                 end
             end
         end
-    end,
-})
+    end
+    vim.api.nvim_create_autocmd("BufWritePre", {
+        group = vim.api.nvim_create_augroup("gopls_autoformat", { clear = true }),
+        buffer = bufnr,
+        callback = function()
+            format_func()
+        end,
+    })
+end
 
 ------------------------------------------ LSP KEYMAP ----------------------------------------------
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -163,5 +173,16 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set("n", "S", vim.lsp.buf.signature_help, opts)
         vim.keymap.set('n', '<space>d', "<cmd>Lspsaga show_buf_diagnostics<cr>", opts)
         vim.keymap.set('n', '<space>m', "cmd>Telescope man_pages sections={\"ALL\"}<cr>", opts)
+        -- format autocmd
+        local client_id = ev.data.client_id
+        local client = vim.lsp.get_client_by_id(client_id)
+        if not client.server_capabilities.documentFormattingProvider then
+            return
+        end
+        if client.name == 'gopls' then
+            gopls_enable_autoformat(ev.buf)
+        else
+            lsp_autoformat(client_id, client.name, ev.buf)
+        end
     end,
 })
