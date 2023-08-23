@@ -122,7 +122,7 @@ vim.keymap.set('n', '<leader>qf', quickfix, { noremap = true, silent = true })
 ------------------------------------------ LSP AUTOFORMAT ----------------------------------------------
 local lsp_autoformat = function(client_id, client_name, bufnr)
     vim.api.nvim_create_autocmd("BufWritePre", {
-        group = vim.api.nvim_create_augroup(client_name .. "_autoformat", { clear = true }),
+        group = vim.api.nvim_create_augroup(client_name .. "_autoformat", { clear = false }),
         buffer = bufnr,
         callback = function()
             vim.lsp.buf.format {

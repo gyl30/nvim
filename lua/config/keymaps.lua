@@ -10,5 +10,4 @@ vim.cmd [[
 
 local opts = { noremap = true, silent = true }
 
-vim.keymap.set('n', '<C-r>', "<cmd>Telescope asynctasks all<cr>", opts)
-
+vim.keymap.set('n', '<localleader>r', "<cmd>Telescope asynctasks all<cr>", opts)
