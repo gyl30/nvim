@@ -55,17 +55,6 @@ vim.diagnostic.config {
 }
 
 local on_attach = function(client, bufnr)
-    if client.server_capabilities.semanticTokensProvider then
-        vim.api.nvim_create_autocmd("TextChanged", {
-            group = vim.api.nvim_create_augroup("semantic_tokens", { clear = true }),
-            buffer = bufnr,
-            callback = function()
-                vim.lsp.semantic_tokens.force_refresh(bufnr)
-            end,
-        })
-        --vim.notify(client.name .. " semantic tokens start client " .. client["id"] .. " on buffer " .. bufnr)
-        -- vim.lsp.semantic_tokens.start(bufnr, client["id"], {})
-    end
     if client.name == "clangd" then
         require("clangd_extensions").setup()
     end
