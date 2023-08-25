@@ -150,13 +150,12 @@ local gopls_enable_autoformat = function(bufnr)
                 end
             end
         end
+        vim.lsp.buf.format()
     end
     vim.api.nvim_create_autocmd("BufWritePre", {
-        group = vim.api.nvim_create_augroup("gopls_autoformat", { clear = true }),
+        group = vim.api.nvim_create_augroup("gopls_autoformat", { clear = false }),
         buffer = bufnr,
-        callback = function()
-            format_func()
-        end,
+        callback = format_func,
     })
 end
 
