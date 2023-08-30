@@ -1,1 +1,4 @@
-return { 'Mofiqul/dracula.nvim'}
+return {
+    'Mofiqul/dracula.nvim',
+    'Mofiqul/vscode.nvim'
+}
