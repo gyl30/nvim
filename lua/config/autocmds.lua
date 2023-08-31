@@ -155,13 +155,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(ev)
         local opts = { buffer = ev.buf, noremap = true, silent = true }
         local builtin = require('telescope.builtin')
-        vim.keymap.set('n', 'gr', builtin.lsp_references, opts)
+        vim.keymap.set('n', 'gr', function() builtin.lsp_references({ include_current_line = false }) end, opts)
         vim.keymap.set('n', 'gd', builtin.lsp_definitions, opts)
         vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
-        vim.keymap.set("n", "S", vim.lsp.buf.signature_help, opts)
+        vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+        vim.keymap.set({ "n", "i" }, "<C-k>", vim.lsp.buf.signature_help, opts)
         vim.keymap.set("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", opts)
         vim.keymap.set('n', '<leader>d', "<cmd>Lspsaga show_buf_diagnostics<cr>", opts)
-        vim.keymap.set('n', '<leader>m', "cmd>Telescope man_pages sections={\"ALL\"}<cr>", opts)
         vim.keymap.set('n', '<leader>qf', "<cmd>Lspsaga code_action<cr>", opts)
         -- format autocmd
         local client_id = ev.data.client_id
