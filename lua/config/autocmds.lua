@@ -160,7 +160,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
         vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
         vim.keymap.set({ "n", "i" }, "<C-k>", vim.lsp.buf.signature_help, opts)
-        vim.keymap.set("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", opts)
+        vim.keymap.set("n", "<leader>rn", "<cmd>Lspsaga rename  ++project<cr>", opts)
         vim.keymap.set('n', '<leader>d', "<cmd>Lspsaga show_buf_diagnostics<cr>", opts)
         vim.keymap.set('n', '<leader>qf', "<cmd>Lspsaga code_action<cr>", opts)
         -- format autocmd
