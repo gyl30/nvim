@@ -1,12 +1,12 @@
 local config = function()
-    local get_hex = require('cokeline.utils').get_hex
+    local attr = require("cokeline.hlgroups").get_hl_attr
     require('cokeline').setup({
         default_hl = {
             fg = function(buffer)
                 return
                     buffer.is_focused
-                    and get_hex('Normal', 'fg')
-                    or get_hex('Comment', 'fg')
+                    and attr('Normal', 'fg')
+                    or attr('Comment', 'fg')
             end,
             bg = 'NONE',
         },
@@ -14,14 +14,14 @@ local config = function()
         components = {
             {
                 text = function(buffer) return (buffer.index ~= 1) and '' or '' end,
-                fg = get_hex('Normal', 'fg')
+                fg = attr('Normal', 'fg')
             },
             {
                 text = function(buffer) return buffer.index .. ' ' end,
             },
             {
                 text = function(buffer) return buffer.unique_prefix end,
-                fg = get_hex('Comment', 'fg'),
+                fg = attr('Comment', 'fg'),
                 italic = true,
             },
             {
