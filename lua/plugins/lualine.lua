@@ -49,7 +49,6 @@ end
 
 local opts = {
     options = {
-        theme = 'dracula-nvim',
         component_separators = { left = '', right = '' },
         section_separators = { left = '', right = '' },
         globalstatus = true,
