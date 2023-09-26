@@ -33,11 +33,11 @@ vim.opt.encoding = 'utf8'
 vim.opt.updatecount = 100
 vim.opt.updatetime = 300
 vim.opt.signcolumn = "no"
-vim.opt.foldcolumn = "0"
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldcolumn = '0'
 vim.opt.foldlevel = 99
-vim.opt.foldenable = false
+vim.opt.foldlevelstart = 99
+vim.opt.foldenable = true
+
 vim.opt.undofile = true
 vim.opt.completeopt = "menu,menuone,noselect"
 vim.opt.scrolloff = 15

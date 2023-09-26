@@ -200,6 +200,10 @@ local config = function()
     local lspconfig = require 'lspconfig'
     local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
     lsp_capabilities = vim.tbl_extend('force', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
+    lsp_capabilities.textDocument.foldingRange = {
+        dynamicRegistration = false,
+        lineFoldingOnly = true
+    }
     gopls_options.capabilities = lsp_capabilities
     clangd_options.capabilities = lsp_capabilities
     lua_ls_options.capabilities = lsp_capabilities
