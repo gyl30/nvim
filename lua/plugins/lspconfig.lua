@@ -1,5 +1,6 @@
 vim.lsp.set_log_level 'trace'
 require('vim.lsp.log').set_format_func(vim.inspect)
+vim.lsp.set_log_level("off")
 
 local outline_symbols = {
     File = { icon = " ", hl = "@text.uri" },
