@@ -15,14 +15,18 @@ local function lsp_icon()
             if next(clients) == nil then
                 return msg
             end
-            local clinet_name = ""
+            local names = {}
             for _, client in ipairs(clients) do
                 local filetypes = client.config.filetypes
                 local name = string.find(client.name, '_') ~= nil and string.upper(client.name) or client.name
                 name = string.find(name, '-') ~= nil and string.upper(name) or name
-                if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-                    clinet_name = clinet_name .. " " .. name
+                if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 and names[name] == nil then
+                    names[name] = true
                 end
+            end
+            local clinet_name = ""
+            for name, _ in pairs(names) do
+                clinet_name = clinet_name .. ' ' .. name
             end
             return clinet_name
         end,
