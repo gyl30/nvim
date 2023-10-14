@@ -102,10 +102,6 @@ return {
                 require('lsp-progress').setup({
                     client_format = client_format,
                 })
-                vim.api.nvim_create_autocmd("User LspProgressStatusUpdated", {
-                    group = vim.api.nvim_create_augroup("lualine_augroup", { clear = true }),
-                    callback = require("lualine").refresh,
-                })
             end
         },
     },
