@@ -159,6 +159,13 @@ vim.api.nvim_create_autocmd('VimEnter', {
     end,
 })
 
+vim.api.nvim_create_autocmd('CmdlineEnter', {
+    group = vim.api.nvim_create_augroup("update_cmdheight", {}),
+    callback = function()
+        vim.opt_local.cmdheight = 1
+    end,
+})
+
 ------------------------------------------ LSP KEYMAP ----------------------------------------------
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("user_lsp_config", {}),
