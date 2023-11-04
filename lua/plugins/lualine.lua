@@ -1,8 +1,4 @@
-local uv = vim.version().minor >= 10 and vim.uv or vim.loop
-local iswin = uv.os_uname().sysname:match('Windows')
-local path_sep = iswin and '\\' or '/'
-
-
+local git_blame = require('gitblame')
 local function lsp_icon()
     return require("lsp-progress").progress({
         format = function(messages)
@@ -70,6 +66,7 @@ local opts = {
                     left = 1, right = 0 }
             },
             { "filename", path = 1, symbols = { modified = "  ", readonly = "", unnamed = "" } },
+            { git_blame.get_current_blame_text, cond = git_blame.is_blame_text_available }
         },
         lualine_x = {
             lsp_icon,
