@@ -149,6 +149,16 @@ local gopls_enable_autoformat = function(bufnr)
     })
 end
 
+vim.api.nvim_create_autocmd('VimEnter', {
+    group = vim.api.nvim_create_augroup("disable_lualine", {}),
+    callback = function()
+        require('lualine').refresh({
+            scope = 'tabpage',
+            place = { 'statusline' },
+        })
+    end,
+})
+
 ------------------------------------------ LSP KEYMAP ----------------------------------------------
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("user_lsp_config", {}),
