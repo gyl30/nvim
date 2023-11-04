@@ -56,7 +56,7 @@ local opts = {
         component_separators = { left = '', right = '' },
         section_separators = { left = '', right = '' },
         globalstatus = true,
-        disabled_filetypes = { statusline = { "dashboard", "alpha", "lazy" } },
+        disabled_filetypes = { statusline = { "dashboard", "startify", "alpha", "lazy" } },
     },
     sections = {
         lualine_a = { "mode" },
