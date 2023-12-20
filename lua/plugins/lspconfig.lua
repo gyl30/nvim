@@ -92,7 +92,6 @@ end
 
 local lua_ls_options = {
     on_attach = on_attach,
-    on_init = on_init,
     settings = {
         Lua = {
             telemetry = { enable = false },
@@ -109,7 +108,13 @@ local lua_ls_options = {
                 callSnippet = "Replace"
             },
             workspace = {
-                checkThirdParty = false,
+                library = {
+                    [vim.fn.expand "$VIMRUNTIME/lua"] = true,
+                    [vim.fn.expand "$VIMRUNTIME/lua/vim/lsp"] = true,
+                    [vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy"] = true,
+                },
+                maxPreload = 100000,
+                preloadFileSize = 10000,
             },
         }
     }
@@ -118,7 +123,6 @@ local gopls_options = {
     cmd = { "gopls", "serve" },
     filetypes = { "go", "gomod" },
     on_attach = on_attach,
-    on_init = on_init,
     init_options = {
         usePlaceholders = true,
         completeUnimported = true,
@@ -162,13 +166,6 @@ local gopls_options = {
 }
 local clangd_options = {
     on_attach = on_attach,
-    on_init = on_init,
-    on_new_config = function(new_config, new_cwd)
-        local status, cmake = pcall(require, "cmake-tools")
-        if status then
-            cmake.clangd_on_new_config(new_config)
-        end
-    end,
     settings = {
         clangd = {
             init_options = {
@@ -204,6 +201,23 @@ local config = function()
     lsp_capabilities.textDocument.foldingRange = {
         dynamicRegistration = false,
         lineFoldingOnly = true
+    }
+    lsp_capabilities.textDocument.completion.completionItem = {
+        documentationFormat = { "markdown", "plaintext" },
+        snippetSupport = true,
+        preselectSupport = true,
+        insertReplaceSupport = true,
+        labelDetailsSupport = true,
+        deprecatedSupport = true,
+        commitCharactersSupport = true,
+        tagSupport = { valueSet = { 1 } },
+        resolveSupport = {
+            properties = {
+                "documentation",
+                "detail",
+                "additionalTextEdits",
+            },
+        },
     }
     gopls_options.capabilities = lsp_capabilities
     clangd_options.capabilities = lsp_capabilities
