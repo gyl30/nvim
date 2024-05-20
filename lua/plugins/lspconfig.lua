@@ -73,18 +73,10 @@ local on_attach = function(client, bufnr)
     --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-    vim.api.nvim_create_autocmd("CursorHold,CursorHoldI,InsertLeave", {
-        callback = function() vim.api.nvim_command "silent! vim.lsp.codelens.refresh()" end,
-        buffer = bufnr,
-    })
-
+    vim.lsp.inlay_hint.enable()
     if client.server_capabilities.documentHighlightProvider then
         vim.api.nvim_create_autocmd("CursorMoved", {
             callback = vim.lsp.buf.clear_references,
-            buffer = bufnr,
-        })
-        vim.api.nvim_create_autocmd("CursorHold,CursorHoldI", {
-            callback = vim.lsp.buf.document_highlight,
             buffer = bufnr,
         })
     end
@@ -181,12 +173,14 @@ local clangd_options = {
                 "--all-scopes-completion",
                 "--completion-style=detailed",
                 "--cross-file-rename=true",
-                "--header-insertion=iwyu",
                 "--pch-storage=memory",
+                "--completion-parse=auto",
                 "--function-arg-placeholders=false",
                 "--ranking-model=decision_forest",
+                "--pretty",
+                "--compile-commands-dir=build",
                 "--header-insertion-decorators",
-                "-j=12",
+                "--enable-config",
                 "--pretty",
             }
         }

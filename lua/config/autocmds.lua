@@ -180,7 +180,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set('n', '<leader>d', "<cmd>Lspsaga show_buf_diagnostics<cr>", opts)
         vim.keymap.set('n', '<leader>qf', "<cmd>Lspsaga code_action<cr>", opts)
         vim.keymap.set('n', '<leader>l', "<cmd>LspLensToggle<cr>", opts)
-        -- format autocmd
+        vim.keymap.set("n", "<leader>lh",
+            function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = ev.buf }, { bufnr = ev.buf }) end,
+            { buffer = ev.buf, desc = "Toggle inlay hints" })
         local client_id = ev.data.client_id
         local client = vim.lsp.get_client_by_id(client_id)
         if not client.server_capabilities.documentFormattingProvider then
