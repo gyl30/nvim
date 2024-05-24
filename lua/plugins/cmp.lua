@@ -24,6 +24,8 @@ local kind_icons = {
     Event = "",
     Operator = "",
     TypeParameter = "",
+    Supermaven = "",
+    Codeium = "",
 }
 return {
     {
@@ -132,12 +134,13 @@ return {
                     end, { "i", "s" }),
                 },
                 sources = cmp.config.sources {
-                    { name = "nvim_lsp", priority = 1000 },
-                    { name = "codeium",  priority = 900 },
-                    { name = "nvim_lua", priority = 800 },
-                    { name = "luasnip",  priority = 750 },
-                    { name = "buffer",   priority = 500 },
-                    { name = "path",     priority = 250 },
+                    { name = "nvim_lsp",   priority = 1000 },
+                    { name = "supermaven", priority = 920 },
+                    { name = "codeium",    priority = 900 },
+                    { name = "nvim_lua",   priority = 800 },
+                    { name = "luasnip",    priority = 750 },
+                    { name = "buffer",     priority = 500 },
+                    { name = "path",       priority = 250 },
                 },
                 formatting = {
                     -- fields = { "abbr", "menu", "kind" },
@@ -151,7 +154,8 @@ return {
                             nvim_lsp = "[Lsp]",
                             nvim_lua = "[Lua]",
                             path = "[Path]",
-                            codeium = "[Cdem]",
+                            codeium = "[Codeium]",
+                            supermaven = "[SuperMaven]",
                         })[entry.source.name]
                         return vim_item
                     end
