@@ -70,7 +70,6 @@ local on_attach = function(client, bufnr)
         show_symbol_details = true,
         autofold_depth = 3,
     })
-    --vim.notify(client.name .. " on attach client " .. client["id"] .. " on buffer " .. bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
     vim.lsp.inlay_hint.enable()
