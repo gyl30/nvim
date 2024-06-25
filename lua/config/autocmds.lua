@@ -109,22 +109,6 @@ vim.api.nvim_create_autocmd("CursorHold", {
     end,
 })
 
------------------------------------------- LSP AUTOFORMAT ----------------------------------------------
-local lsp_autoformat = function(client_id, client_name, bufnr)
-    vim.api.nvim_create_autocmd("BufWritePre", {
-        group = vim.api.nvim_create_augroup(client_name .. "_autoformat", { clear = false }),
-        buffer = bufnr,
-        callback = function()
-            vim.lsp.buf.format {
-                async = false,
-                filter = function(c)
-                    return c.id == client_id
-                end,
-            }
-        end,
-    })
-end
-
 -- https://github.com/neovim/nvim-lspconfig/issues/115
 local gopls_enable_autoformat = function(bufnr)
     local format_func = function()
@@ -191,7 +175,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         if client.name == 'gopls' then
             gopls_enable_autoformat(ev.buf)
         else
-            lsp_autoformat(client_id, client.name, ev.buf)
+            vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', opts)
         end
     end,
 })
