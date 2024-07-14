@@ -75,6 +75,7 @@ return {
                         mirror = false,
                     },
                 },
+                man_pages = { sections = { "2", "3" } },
             },
             extensions = {
                 fzf = {
