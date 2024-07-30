@@ -1,6 +1,17 @@
 return {
     "ibhagwan/fzf-lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
+    cmd = "FzfLua",
+    keys = {
+        {
+            "ff",
+            mode = { 'n' },
+            silent = true,
+            function()
+                require("fzf-lua").lsp_finder({ winopts = { preview = { layout = "vertical", vertical="up:50%", default="bat", scrollbar = false } } })
+            end,
+        },
+    },
     config = function()
         local fzf_lua = require("fzf-lua")
         require("fzf-lua").setup({
