@@ -72,7 +72,6 @@ local on_attach = function(client, bufnr)
     })
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-    vim.lsp.inlay_hint.enable()
     if client.server_capabilities.documentHighlightProvider then
         vim.api.nvim_create_autocmd("CursorMoved", {
             callback = vim.lsp.buf.clear_references,
