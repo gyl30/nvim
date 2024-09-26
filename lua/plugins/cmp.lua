@@ -49,16 +49,13 @@ return {
                     disallow_prefix_unmatching = true,
                 },
                 mapping = {
+                    ['<C-p>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+                    ['<C-n>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
                     ["<Tab>"] = cmp.mapping(function(fallback)
                         if cmp.visible() and has_words_before() then
                             cmp.select_next_item({ behavior = cmp.SelectBehavior.Insert })
                         else
                             fallback()
-                        end
-                    end, { "i", "s" }),
-                    ["<S-Tab>"] = cmp.mapping(function()
-                        if cmp.visible() then
-                            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })
                         end
                     end, { "i", "s" }),
                 },
