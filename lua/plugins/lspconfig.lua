@@ -65,7 +65,7 @@ local on_attach = function(client, bufnr)
         require("clangd_extensions").setup()
     end
 
-    require("symbols-outline").setup({
+    require("outline").setup({
         symbols = outline_symbols,
         show_symbol_details = true,
         autofold_depth = 3,
@@ -236,14 +236,14 @@ return {
             end
         },
         {
-            'simrat39/symbols-outline.nvim',
-            cmd = { 'SymbolsOutline', 'SymbolsOutlineOpen' },
+            "hedyhli/outline.nvim",
+            cmd = { "Outline", "OutlineOpen" },
             keys = {
                 {
                     '<Leader>o',
                     mode = { 'n' },
                     silent = true,
-                    '<cmd>SymbolsOutline<CR>',
+                    '<cmd>Outline<CR>',
                     desc = 'Symbols Outline'
                 },
             },
