@@ -15,6 +15,10 @@ require("lazy").setup({
     rocks = {
         enabled = false,
     },
+    install = {
+        missing = true,
+        colorscheme = { "dracula" },
+    },
     performance = {
         cache = {
             enabled = false,

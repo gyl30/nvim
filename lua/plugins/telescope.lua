@@ -28,6 +28,7 @@ return {
         local actions = require "telescope.actions"
         require('telescope').setup({
             defaults = {
+                borderchars = { " ", " ", " ", " ", " ", " ", " ", " " },
                 prompt_prefix = "❯ ",
                 selection_caret = "❯ ",
                 winblend = 0,

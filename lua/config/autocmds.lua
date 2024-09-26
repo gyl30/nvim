@@ -75,16 +75,6 @@ vim.api.nvim_create_autocmd("CompleteDone", {
     end,
 })
 
-vim.api.nvim_create_autocmd('VimEnter', {
-    group = vim.api.nvim_create_augroup("disable_lualine", {}),
-    callback = function()
-        require('lualine').refresh({
-            scope = 'tabpage',
-            place = { 'statusline' },
-        })
-    end,
-})
-
 vim.api.nvim_create_autocmd('CmdlineEnter', {
     group = vim.api.nvim_create_augroup("update_cmdheight", {}),
     callback = function()
