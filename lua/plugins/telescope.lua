@@ -1,16 +1,26 @@
 return {
     "nvim-telescope/telescope.nvim",
     dependencies = {
-        'nvim-lua/plenary.nvim',
+        "nvim-lua/plenary.nvim",
         "debugloop/telescope-undo.nvim",
         "nvim-telescope/telescope-file-browser.nvim",
-        'GustavoKatel/telescope-asynctasks.nvim',
+        "nvim-telescope/telescope-ui-select.nvim",
+        "GustavoKatel/telescope-asynctasks.nvim",
         {
             "nvim-telescope/telescope-fzf-native.nvim",
             build = "make",
             cond = function()
                 return vim.fn.executable("make") == 1
             end,
+        },
+    },
+
+    keys = {
+        {
+            '<localleader>r', mode = { 'n' }, silent = true, '<cmd>Telescope asynctasks all<cr>',
+        },
+        {
+            '<leader>m', mode = { 'n' }, silent = true, '<cmd>Telescope man_pages sections={\"ALL\"}<cr>',
         },
     },
     cmd = "Telescope",
@@ -44,8 +54,6 @@ return {
                     i = {
                         ["<C-n>"] = actions.cycle_history_next,
                         ["<C-p>"] = actions.cycle_history_prev,
-                        ["<C-j>"] = actions.move_selection_next,
-                        ["<C-k>"] = actions.move_selection_previous,
                     },
                     n = { q = actions.close },
                 },
@@ -84,11 +92,21 @@ return {
                     override_file_sorter = true,    -- override the file sorter
                     case_mode = 'smart_case',       -- or "ignore_case" or "respect_case"
                 },
+                ["ui-select"] = {
+                    layout_config = {
+                        prompt_position = "bottom",
+                        width = 0.9,
+                        height = 0.4,
+                        preview_cutoff = 1,
+                        mirror = false,
+                    },
+                }
             },
         })
         require('telescope').load_extension('fzf')
         require('telescope').load_extension('undo')
         require('telescope').load_extension("file_browser")
         require('telescope').load_extension("asynctasks")
+        require("telescope").load_extension("ui-select")
     end,
 }

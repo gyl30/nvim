@@ -1,4 +1,10 @@
 return {
     'Mofiqul/dracula.nvim',
-    'Mofiqul/vscode.nvim'
+    config = function()
+        require("dracula").setup({
+              overrides = {
+                  Normal = { bg = "NONE" },
+              },
+        })
+    end
 }

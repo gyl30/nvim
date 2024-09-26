@@ -226,7 +226,6 @@ return {
     dependencies = {
         { 'hrsh7th/nvim-cmp' },
         { 'hrsh7th/cmp-nvim-lsp' },
-        { 'L3MON4D3/LuaSnip' },
         { 'p00f/clangd_extensions.nvim' },
         { 'Civitasv/cmake-tools.nvim' },
         {

@@ -14,26 +14,6 @@ endfunction
 "autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :%retab
 ]]
 
-vim.keymap.set("n", "<localleader>bb", function()
-    local cnt = 0
-    local blink_times = 7
-    local timer = vim.loop.new_timer()
-
-    timer:start(0, 100, vim.schedule_wrap(function()
-        vim.cmd [[
-            set cursorcolumn!
-            set cursorline!
-        ]]
-
-        if cnt == blink_times then
-            timer:close()
-        end
-
-        cnt = cnt + 1
-    end))
-end)
-
--- show cursor line only in active window
 vim.api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, {
     callback = function()
         local ok, cl = pcall(vim.api.nvim_win_get_var, 0, "auto-cursorline")
@@ -52,7 +32,6 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
         end
     end,
 })
--- create directories when needed, when saving a file
 vim.api.nvim_create_autocmd("BufWritePre", {
     group = vim.api.nvim_create_augroup("better_backup", { clear = true }),
     callback = function(event)
@@ -70,38 +49,6 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
     end,
 })
 
-vim.api.nvim_create_autocmd("FileType", {
-    group = vim.api.nvim_create_augroup("user_close_with_q", { clear = true }),
-    pattern = {
-        "PlenaryTestPopup",
-        "help",
-        "lspinfo",
-        "man",
-        "notify",
-        "qf",
-        "spectre_panel",
-        "startuptime",
-        "tsplayground",
-        "neotest-output",
-        "checkhealth",
-        "neotest-summary",
-        "neotest-output-panel",
-    },
-    callback = function(event)
-        vim.bo[event.buf].buflisted = false
-        vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
-    end,
-})
-
--- Fix conceallevel for json & help files
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "json", "jsonc" },
-    callback = function()
-        vim.wo.spell = false
-        vim.wo.conceallevel = 0
-    end,
-})
-
 vim.api.nvim_create_autocmd("CursorHold", {
     callback = function()
         vim.signcolumn = "no"
@@ -109,29 +56,24 @@ vim.api.nvim_create_autocmd("CursorHold", {
     end,
 })
 
--- https://github.com/neovim/nvim-lspconfig/issues/115
-local gopls_enable_autoformat = function(bufnr)
-    local format_func = function()
-        local params = vim.lsp.util.make_range_params(nil, vim.lsp.util._get_offset_encoding())
+vim.api.nvim_create_autocmd("CompleteDone", {
+    pattern = "*.go",
+    callback = function()
+        local params = vim.lsp.util.make_range_params()
         params.context = { only = { "source.organizeImports" } }
-        local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 3000)
+        local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 5000)
+
         for _, res in pairs(result or {}) do
             for _, r in pairs(res.result or {}) do
-                if r.edit then
-                    vim.lsp.util.apply_workspace_edit(r.edit, vim.lsp.util._get_offset_encoding())
-                else
+                if next(r.edit) then
+                    vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
+                elseif next(r.command) then
                     vim.lsp.buf.execute_command(r.command)
                 end
             end
         end
-        vim.lsp.buf.format()
-    end
-    vim.api.nvim_create_autocmd("BufWritePre", {
-        group = vim.api.nvim_create_augroup("gopls_autoformat", { clear = false }),
-        buffer = bufnr,
-        callback = format_func,
-    })
-end
+    end,
+})
 
 vim.api.nvim_create_autocmd('VimEnter', {
     group = vim.api.nvim_create_augroup("disable_lualine", {}),
@@ -155,26 +97,19 @@ vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("user_lsp_config", {}),
     callback = function(ev)
         local opts = { buffer = ev.buf, noremap = true, silent = true }
-        local builtin = require('telescope.builtin')
-        vim.keymap.set('n', 'gr', function() builtin.lsp_references({ include_current_line = false }) end, opts)
-        vim.keymap.set('n', 'gd', builtin.lsp_definitions, opts)
-        vim.keymap.set('n', 'gi', builtin.lsp_implementations, opts)
+        local telescope = require('telescope.builtin')
+        vim.keymap.set('n', 'gr', telescope.lsp_references, opts)
+        vim.keymap.set('n', 'gd', telescope.lsp_definitions, opts)
+        vim.keymap.set('n', 'gi', telescope.lsp_implementations, opts)
         vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-        vim.keymap.set("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", opts)
-        vim.keymap.set('n', '<leader>d', "<cmd>Lspsaga show_buf_diagnostics<cr>", opts)
-        vim.keymap.set('n', '<leader>qf', "<cmd>Lspsaga code_action<cr>", opts)
-        vim.keymap.set('n', '<leader>l', "<cmd>LspLensToggle<cr>", opts)
-        vim.keymap.set("n", "<leader>lh",
-            function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = ev.buf }, { bufnr = ev.buf }) end,
-            { buffer = ev.buf, desc = "Toggle inlay hints" })
-        local client_id = ev.data.client_id
-        local client = vim.lsp.get_client_by_id(client_id)
+        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+        vim.keymap.set('n', '<leader>d', telescope.diagnostics, opts)
+        vim.keymap.set('n', '<leader>qf', vim.lsp.buf.code_action, opts)
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
         if not client.server_capabilities.documentFormattingProvider then
             return
         end
-        if client.name == 'gopls' then
-            gopls_enable_autoformat(ev.buf)
-        else
+        if client.name ~= 'gopls' then
             vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', opts)
         end
     end,

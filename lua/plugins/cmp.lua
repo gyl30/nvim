@@ -33,8 +33,9 @@ return {
             "hrsh7th/cmp-nvim-lsp",
             { 'echasnovski/mini.nvim', version = false },
         },
-        event = "InsertEnter",
-        opts = function()
+        ft           = { "cpp", "hpp", "h", "go", "python" },
+        event        = "InsertEnter",
+        opts         = function()
             local cmp = require "cmp"
             return {
                 preselect = cmp.PreselectMode.None,

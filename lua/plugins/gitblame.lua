@@ -1,5 +1,8 @@
 return {
     "f-person/git-blame.nvim",
+    keys = {
+        '<C-g>', mode = { 'n' }, silent = true, '<cmd>GitBlameToggle<cr>',
+    },
     config = function()
         require('gitblame').setup {
             enabled = false,
