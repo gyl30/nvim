@@ -109,5 +109,6 @@ return {
         require('telescope').load_extension("file_browser")
         require('telescope').load_extension("asynctasks")
         require("telescope").load_extension("ui-select")
+        vim.api.nvim_set_hl(0, "TelescopeNormal", { bg = "none" })
     end,
 }
