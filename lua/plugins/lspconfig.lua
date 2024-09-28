@@ -41,25 +41,31 @@ vim.lsp.handlers['workspace/diagnostic/refresh'] = function(_, _, ctx)
 end
 
 vim.diagnostic.config {
-    virtual_text = false,
-    underline = false,
-    update_in_insert = false,
-    float = {
-        focused = false,
-        style = "minimal",
-        border = "rounded",
-        source = "always",
-        header = "",
-        prefix = "",
-    },
+  virtual_text = false
 }
-local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
-function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
-    opts = opts or {}
-    opts.border = opts.border or "rounded"
-    return orig_util_open_floating_preview(contents, syntax, opts, ...)
-end
 
+local ns = vim.api.nvim_create_namespace('CurlineDiag')
+vim.api.nvim_create_autocmd('LspAttach',{
+  callback = function(args)
+    vim.api.nvim_create_autocmd('CursorHold', {
+      buffer = args.buf,
+      callback = function()
+        pcall(vim.api.nvim_buf_clear_namespace,args.buf,ns, 0, -1)
+        local hi = { 'Error', 'Warn','Info','Hint'}
+        local curline = vim.api.nvim_win_get_cursor(0)[1]
+        local diagnostics = vim.diagnostic.get(args.buf, {lnum =curline - 1})
+        local virt_texts = { { (' '):rep(4) } }
+        for _, diag in ipairs(diagnostics) do
+          virt_texts[#virt_texts + 1] = {diag.message, 'Diagnostic'..hi[diag.severity]}
+        end
+        vim.api.nvim_buf_set_extmark(args.buf, ns, curline - 1, 0,{
+          virt_text = virt_texts,
+          hl_mode = 'combine'
+        })
+      end
+    })
+  end
+})
 local on_attach = function(client, bufnr)
     if client.name == "clangd" then
         require("clangd_extensions").setup()
@@ -71,6 +77,10 @@ local on_attach = function(client, bufnr)
         autofold_depth = 3,
     })
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+    vim.cmd([[highlight DiagnosticFloatingError guibg=NONE guifg=NONE gui=underline]])
+    vim.cmd([[highlight DiagnosticFloatingWarn guibg=NONE guifg=NONE gui=underline]])
+    vim.cmd([[highlight DiagnosticFloatingInfo guibg=NONE guifg=NONE gui=underline]])
+    vim.cmd([[highlight DiagnosticFloatingHint guibg=NONE guifg=NONE gui=underline]])
 
     if client.server_capabilities.documentHighlightProvider then
         vim.api.nvim_create_autocmd("CursorMoved", {

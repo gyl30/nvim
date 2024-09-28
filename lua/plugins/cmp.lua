@@ -42,6 +42,14 @@ return {
                 completion = {
                     keyword_length = 2,
                 },
+                window = {
+                    completion = vim.tbl_extend("force", cmp.config.window.bordered(), {
+                        winhighlight = "NormalFloat:None,FloatBorder:None,CursorLine:Visual,Search:None",
+                    }),
+                    documentation = vim.tbl_extend("force", cmp.config.window.bordered(), {
+                        winhighlight = "NormalFloat:None,FloatBorder:None,CursorLine:Visual,Search:None",
+                    }),
+                },
                 matching = {
                     disallow_fuzzy_matching = true,
                     disallow_fullfuzzy_matching = true,

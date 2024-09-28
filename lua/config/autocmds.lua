@@ -49,13 +49,6 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
     end,
 })
 
-vim.api.nvim_create_autocmd("CursorHold", {
-    callback = function()
-        vim.signcolumn = "no"
-        vim.diagnostic.open_float(nil, { show_header = false, severity_sort = true, scope = "line", focusable = false })
-    end,
-})
-
 vim.api.nvim_create_autocmd("CompleteDone", {
     pattern = "*.go",
     callback = function()
