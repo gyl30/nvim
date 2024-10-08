@@ -234,7 +234,7 @@ return {
     config = config,
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-        { 'hrsh7th/nvim-cmp' },
+        { 'iguanacucumber/magazine.nvim'},
         { 'hrsh7th/cmp-nvim-lsp' },
         { 'p00f/clangd_extensions.nvim' },
         { 'Civitasv/cmake-tools.nvim' },
