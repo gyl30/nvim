@@ -2,37 +2,6 @@ vim.lsp.set_log_level 'trace'
 require('vim.lsp.log').set_format_func(vim.inspect)
 vim.lsp.set_log_level("off")
 
-local outline_symbols = {
-    File = { icon = " ", hl = "@text.uri" },
-    Module = { icon = " ", hl = "@namespace" },
-    Namespace = { icon = " ", hl = "@namespace" },
-    Package = { icon = " ", hl = "@namespace" },
-    Class = { icon = " ", hl = "@type" },
-    Method = { icon = " ", hl = "@method" },
-    Property = { icon = " ", hl = "@method" },
-    Field = { icon = " ", hl = "@field" },
-    Constructor = { icon = " ", hl = "@constructor" },
-    Enum = { icon = " ", hl = "@type" },
-    Interface = { icon = " ", hl = "@type" },
-    Function = { icon = "󰡱 ", hl = "@function" },
-    Variable = { icon = " ", hl = "@constant" },
-    Constant = { icon = " ", hl = "@constant" },
-    String = { icon = "󰅳 ", hl = "@string" },
-    Number = { icon = "󰎠 ", hl = "@number" },
-    Boolean = { icon = " ", hl = "@boolean" },
-    Array = { icon = "󰅨 ", hl = "@constant" },
-    Object = { icon = " ", hl = "@type" },
-    Key = { icon = " ", hl = "@type" },
-    Null = { icon = "󰟢 ", hl = "@type" },
-    EnumMember = { icon = " ", hl = "@field" },
-    Struct = { icon = " ", hl = "@type" },
-    Event = { icon = " ", hl = "@type" },
-    Operator = { icon = " ", hl = "@operator" },
-    TypeParameter = { icon = " ", hl = "@parameter" },
-    Component = { icon = " ", hl = "@function" },
-    Fragment = { icon = " ", hl = "@constant" },
-}
-
 vim.lsp.handlers['workspace/diagnostic/refresh'] = function(_, _, ctx)
     local ns = vim.lsp.diagnostic.get_namespace(ctx.client_id)
     local bufnr = vim.api.nvim_get_current_buf()
@@ -67,15 +36,6 @@ vim.api.nvim_create_autocmd('LspAttach',{
   end
 })
 local on_attach = function(client, bufnr)
-    if client.name == "clangd" then
-        require("clangd_extensions").setup()
-    end
-
-    require("outline").setup({
-        symbols = outline_symbols,
-        show_symbol_details = true,
-        autofold_depth = 3,
-    })
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     vim.cmd([[highlight DiagnosticFloatingError guibg=NONE guifg=NONE gui=underline]])
     vim.cmd([[highlight DiagnosticFloatingWarn guibg=NONE guifg=NONE gui=underline]])
@@ -237,25 +197,11 @@ return {
         { 'iguanacucumber/magazine.nvim'},
         { 'hrsh7th/cmp-nvim-lsp' },
         { 'p00f/clangd_extensions.nvim' },
-        { 'Civitasv/cmake-tools.nvim' },
         {
             'ray-x/lsp_signature.nvim',
             config = function()
                 require 'lsp_signature'.setup()
             end
-        },
-        {
-            "hedyhli/outline.nvim",
-            cmd = { "Outline", "OutlineOpen" },
-            keys = {
-                {
-                    '<Leader>o',
-                    mode = { 'n' },
-                    silent = true,
-                    '<cmd>Outline<CR>',
-                    desc = 'Symbols Outline'
-                },
-            },
         },
     }
 }
