@@ -218,7 +218,7 @@ local config = function()
     lua_ls_options.capabilities = lsp_capabilities
     lspconfig.gopls.setup(gopls_options)
     lspconfig.clangd.setup(clangd_options)
-    lspconfig.ccls.setup(ccls_options)
+    -- lspconfig.ccls.setup(ccls_options)
     lspconfig.lua_ls.setup(lua_ls_options)
 end
 local func_colors = {
@@ -251,17 +251,23 @@ local all_colors = {
     typeParameter = type_colors,
     variable = var_colors
 }
-for type, colors in pairs(all_colors) do
-    for i = 1, #colors do
-        vim.api.nvim_set_hl(0, string.format('@lsp.typemod.%s.id%s.cpp', type, i - 1), { fg = colors[i] })
+local function link_semantic_token_highlight()
+    for type, colors in pairs(all_colors) do
+        for i = 1, #colors do
+            for _, lang in pairs({ 'c', 'cpp' }) do
+                vim.api.nvim_set_hl(0, string.format('@lsp.typemod.%s.id%s.%s', type, i - 1, lang), { fg = colors[i] })
+            end
+        end
     end
-end
-
-vim.cmd([[
+    vim.cmd([[
 hi @lsp.mod.classScope.cpp gui=italic
 hi @lsp.mod.static.cpp gui=bold
 hi @lsp.typemod.variable.namespaceScope.cpp gui=bold,underline
 ]])
+end
+vim.api.nvim_create_autocmd("ColorScheme", {
+    callback = link_semantic_token_highlight,
+})
 return {
     'neovim/nvim-lspconfig',
     config = config,
