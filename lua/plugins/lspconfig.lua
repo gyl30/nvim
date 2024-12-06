@@ -144,10 +144,17 @@ local gopls_options = {
     },
 }
 local ccls_options = {
+    root_dir = function(fname)
+        local util = require 'lspconfig.util'
+        return util.root_pattern('compile_commands.json', '.ccls')(fname)
+    end,
     init_options = {
         index = {
-            threads = 0,
+            threads = 8,
             initialBlacklist = { "/(test|unittests)/" },
+        },
+        cache = {
+            directory = "/tmp/ccls-cache",
         },
         highlight = {
             rainbow = 10,
@@ -165,21 +172,16 @@ local clangd_options = {
             },
             cmd = {
                 "clangd",
-                "--background-index",
+                "-j=8",
+                "--pretty",
                 "--clang-tidy",
-                "--clang-tidy-checks=bugprone-*, clang-analyzer-*, google-*, modernize-*, performance-*, portability-*, readability-*, -bugprone-too-small-loop-variable, -clang-analyzer-cplusplus.NewDelete, -clang-analyzer-cplusplus.NewDeleteLeaks, -modernize-use-nodiscard, -modernize-avoid-c-arrays, -readability-magic-numbers, -bugprone-branch-clone, -bugprone-signed-char-misuse, -bugprone-unhandled-self-assignment, -clang-diagnostic-implicit-int-float-conversion, -modernize-use-auto, -modernize-use-trailing-return-type, -readability-convert-member-functions-to-static, -readability-make-member-function-const, -readability-qualified-auto, -readability-redundant-access-specifiers,",
+                "--background-index",
                 "--all-scopes-completion",
-                "--completion-style=detailed",
                 "--cross-file-rename=true",
-                "--pch-storage=memory",
-                "--completion-parse=auto",
-                "--function-arg-placeholders=false",
-                "--ranking-model=decision_forest",
-                "--pretty",
+                "--completion-style=detailed",
                 "--compile-commands-dir=build",
-                "--header-insertion-decorators",
-                "--enable-config",
-                "--pretty",
+                "--ranking-model=decision_forest",
+                "--function-arg-placeholders=false",
             }
         }
     }
@@ -217,57 +219,10 @@ local config = function()
     ccls_options.capabilities = lsp_capabilities
     lua_ls_options.capabilities = lsp_capabilities
     lspconfig.gopls.setup(gopls_options)
-    lspconfig.clangd.setup(clangd_options)
-    -- lspconfig.ccls.setup(ccls_options)
+    -- lspconfig.clangd.setup(clangd_options)
+    lspconfig.ccls.setup(ccls_options)
     lspconfig.lua_ls.setup(lua_ls_options)
 end
-local func_colors = {
-    '#e5b124', '#927754', '#eb992c', '#e2bf8f', '#d67c17',
-    '#88651e', '#e4b953', '#a36526', '#b28927', '#d69855',
-}
-local type_colors = {
-    '#e1afc3', '#d533bb', '#9b677f', '#e350b6', '#a04360',
-    '#dd82bc', '#de3864', '#ad3f87', '#dd7a90', '#e0438a',
-}
-local param_colors = {
-    '#e5b124', '#927754', '#eb992c', '#e2bf8f', '#d67c17',
-    '#88651e', '#e4b953', '#a36526', '#b28927', '#d69855',
-}
-local var_colors = {
-    '#429921', '#58c1a4', '#5ec648', '#36815b', '#83c65d',
-    '#419b2f', '#43cc71', '#7eb769', '#58bf89', '#3e9f4a',
-}
-local all_colors = {
-    class = type_colors,
-    constructor = func_colors,
-    enum = type_colors,
-    enumMember = var_colors,
-    field = var_colors,
-    ['function'] = func_colors,
-    method = func_colors,
-    parameter = param_colors,
-    struct = type_colors,
-    typeAlias = type_colors,
-    typeParameter = type_colors,
-    variable = var_colors
-}
-local function link_semantic_token_highlight()
-    for type, colors in pairs(all_colors) do
-        for i = 1, #colors do
-            for _, lang in pairs({ 'c', 'cpp' }) do
-                vim.api.nvim_set_hl(0, string.format('@lsp.typemod.%s.id%s.%s', type, i - 1, lang), { fg = colors[i] })
-            end
-        end
-    end
-    vim.cmd([[
-hi @lsp.mod.classScope.cpp gui=italic
-hi @lsp.mod.static.cpp gui=bold
-hi @lsp.typemod.variable.namespaceScope.cpp gui=bold,underline
-]])
-end
-vim.api.nvim_create_autocmd("ColorScheme", {
-    callback = link_semantic_token_highlight,
-})
 return {
     'neovim/nvim-lspconfig',
     config = config,

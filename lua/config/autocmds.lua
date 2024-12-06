@@ -89,11 +89,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set('n', '<leader>d', telescope.diagnostics, opts)
         vim.keymap.set('n', '<leader>qf', vim.lsp.buf.code_action, opts)
         local client = vim.lsp.get_client_by_id(ev.data.client_id)
-        if not client.server_capabilities.documentFormattingProvider then
-            return
+        if client.server_capabilities.documentFormattingProvider then
+            if client.name ~= 'gopls' then
+                vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', opts)
+            end
         end
-        if client.name ~= 'gopls' then
-            vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', opts)
+        if client.name ~= 'ccls' then
+            require("ccls").setup()
         end
     end,
 })
