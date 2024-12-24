@@ -94,7 +94,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
                 vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', opts)
             end
         end
-        if client.name ~= 'ccls' then
+        if client.name == 'ccls' then
             require("ccls").setup()
         end
     end,

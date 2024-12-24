@@ -1,6 +1,6 @@
 vim.lsp.set_log_level 'trace'
 require('vim.lsp.log').set_format_func(vim.inspect)
-vim.lsp.set_log_level("off")
+-- vim.lsp.set_log_level("off")
 
 vim.lsp.handlers['workspace/diagnostic/refresh'] = function(_, _, ctx)
     local ns = vim.lsp.diagnostic.get_namespace(ctx.client_id)
@@ -57,7 +57,22 @@ local on_attach = function(client, bufnr)
             desc = 'Clear All the References',
         })
     end
-
+    -- if client.name == "clangd" then
+    --     client.server_capabilities.referencesProvider = false
+    --     client.server_capabilities.renameProvider = false
+    --     client.server_capabilities.completionProvider = false
+    --     client.server_capabilities.compilationDatabase = false
+    --     client.server_capabilities.declarationProvider = false
+    --     client.server_capabilities.definitionProvider = false
+    --     client.server_capabilities.implementationProvider = false
+    --     client.server_capabilities.inactiveRegionsProvider = false
+    --     client.server_capabilities.inlayHintProvider = false
+    --     client.server_capabilities.callHierarchyProvider = false
+    --     client.server_capabilities.hoverProvider = false
+    -- end
+    if client.name == "ccls" then
+        client.server_capabilities.semanticTokensProvider = nil
+    end
     if client.server_capabilities.semanticTokensProvider then
         vim.treesitter.stop(bufnr)
     end
@@ -144,10 +159,10 @@ local gopls_options = {
     },
 }
 local ccls_options = {
-    root_dir = function(fname)
-        local util = require 'lspconfig.util'
-        return util.root_pattern('compile_commands.json', '.ccls')(fname)
-    end,
+    -- root_dir = function(fname)
+    --     local util = require 'lspconfig.util'
+    --     return util.root_pattern('compile_commands.json', '.ccls')(fname)
+    -- end,
     init_options = {
         index = {
             threads = 8,
@@ -156,9 +171,9 @@ local ccls_options = {
         cache = {
             directory = "/tmp/ccls-cache",
         },
-        highlight = {
-            rainbow = 10,
-        },
+        -- highlight = {
+        --     rainbow = 10,
+        -- },
     }
 }
 local clangd_options = {
@@ -182,6 +197,7 @@ local clangd_options = {
                 "--compile-commands-dir=build",
                 "--ranking-model=decision_forest",
                 "--function-arg-placeholders=false",
+                 "--clang-tidy-checks=bugprone-*, clang-analyzer-*, google-*, modernize-*, performance-*, portability-*, readability-*, -bugprone-too-small-loop-variable, -clang-analyzer-cplusplus.NewDelete, -clang-analyzer-cplusplus.NewDeleteLeaks, -modernize-use-nodiscard, -modernize-avoid-c-arrays, -readability-magic-numbers, -bugprone-branch-clone, -bugprone-signed-char-misuse, -bugprone-unhandled-self-assignment, -clang-diagnostic-implicit-int-float-conversion, -modernize-use-auto, -modernize-use-trailing-return-type, -readability-convert-member-functions-to-static, -readability-make-member-function-const, -readability-qualified-auto, -readability-redundant-access-specifiers,",
             }
         }
     }
@@ -190,6 +206,12 @@ local clangd_options = {
 local config = function()
     require("neodev").setup({})
     local lspconfig = require 'lspconfig'
+    lspconfig.util.default_config.on_init = function(client, _)
+        if client.name == "ccls" then
+            client.server_capabilities.semanticTokensProvider = nil
+        end
+    end
+
     local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
     lsp_capabilities = vim.tbl_extend('force', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
     lsp_capabilities.textDocument.foldingRange = {
@@ -218,9 +240,13 @@ local config = function()
     clangd_options.capabilities.offsetEncoding = { "utf-32" }
     ccls_options.capabilities = lsp_capabilities
     lua_ls_options.capabilities = lsp_capabilities
+    ccls_options.capabilities.workspace.semanticTokens = nil
+    ccls_options.capabilities.textDocument.semanticTokens = nil
     lspconfig.gopls.setup(gopls_options)
-    -- lspconfig.clangd.setup(clangd_options)
-    lspconfig.ccls.setup(ccls_options)
+    lspconfig.jsonls.setup({ capabilities = lsp_capabilities })
+    lspconfig.pyright.setup({ capabilities = lsp_capabilities })
+    lspconfig.clangd.setup(clangd_options)
+    -- lspconfig.ccls.setup(ccls_options)
     lspconfig.lua_ls.setup(lua_ls_options)
 end
 return {

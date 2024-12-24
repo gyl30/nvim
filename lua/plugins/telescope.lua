@@ -28,7 +28,7 @@ return {
         local actions = require "telescope.actions"
         require('telescope').setup({
             defaults = {
-                borderchars = { " ", " ", " ", " ", " ", " ", " ", " " },
+                -- borderchars = { " ", "│", " ", "│", " ", " ", " ", " " },
                 prompt_prefix = "❯ ",
                 selection_caret = "❯ ",
                 winblend = 0,
@@ -39,7 +39,6 @@ return {
                 initial_mode = "normal",
                 sorting_strategy = "ascending",
                 layout_strategy = "vertical",
-                borderchars = nil,
                 color_devicons = true,
                 set_env = { ["COLORTERM"] = "truecolor" },
                 layout_config = {
