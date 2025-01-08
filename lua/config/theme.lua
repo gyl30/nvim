@@ -1,2 +1,3 @@
-vim.cmd.colorscheme "dracula"
+-- vim.cmd.colorscheme "dracula"
+-- vim.cmd.colorscheme ""
 -- vim.cmd.colorscheme "tokyonight"

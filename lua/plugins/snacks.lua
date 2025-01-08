@@ -14,7 +14,7 @@ return {
                 { section = "startup" },
             },
         },
-        indent = { enabled = true },
+        -- indent = { enabled = true },
         lazygit = { enabled = true },
     },
     keys = {

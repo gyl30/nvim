@@ -8,5 +8,12 @@ require("config.statusline")
 require("config.neovide")
 require("config.theme")
 vim.cmd [[
+    colorscheme slate 
+    highlight ModeMsg     guibg=NONE guibg=NONE ctermfg=10 guifg=NvimLightGreen
+    highlight Normal      guibg=NONE
+    highlight MatchParen  guibg=NONE guifg=yellow gui=underline
+    highlight NormalFloat guibg=NONE
+    highlight FloatBorder guibg=NONE
+    highlight TabLineFill guifg=NONE guibg=NONE ctermfg=210 ctermbg=236
     source ~/.config/nvim/task.vim
 ]]
