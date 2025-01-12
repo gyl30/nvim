@@ -1,6 +1,4 @@
 vim.cmd [[
-" 打开文件自动定位到最后编辑的位置
-autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | execute "normal! g'\"" | endif
 " 根据搜索结果折叠
 nnoremap zpr :setlocal foldexpr=(getline(v:lnum)=~@/)?0:(getline(v:lnum-1)=~@/)\\|\\|(getline(v:lnum+1)=~@/)?1:2 foldmethod=expr foldlevel=0 foldcolumn=2<CR>:set foldmethod=manual<CR><CR>
 vnoremap // y/<c-r>"<CR>   "
@@ -14,6 +12,25 @@ endfunction
 "autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :%retab
 ]]
 
+vim.api.nvim_create_autocmd({ "FileType" }, {
+  group = vim.api.nvim_create_augroup("FormatOptions", { clear = true }),
+  pattern = { "*" },
+  callback = function()
+    vim.opt_local.fo:remove("o")
+    vim.opt_local.fo:remove("r")
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufReadPost", {
+    callback = function()
+        local mark = vim.api.nvim_buf_get_mark(0, '"')
+        local lcount = vim.api.nvim_buf_line_count(0)
+        if mark[1] > 0 and mark[1] <= lcount then
+            pcall(vim.api.nvim_win_set_cursor, 0, mark)
+        end
+    end,
+    desc = "go to last loc when opening a buffer",
+})
 vim.api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, {
     callback = function()
         local ok, cl = pcall(vim.api.nvim_win_get_var, 0, "auto-cursorline")
@@ -89,6 +106,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set('n', '<leader>d', telescope.diagnostics, opts)
         vim.keymap.set('n', '<leader>qf', vim.lsp.buf.code_action, opts)
         local client = vim.lsp.get_client_by_id(ev.data.client_id)
+        if client == nil then
+            return
+        end
         if client.server_capabilities.documentFormattingProvider then
             if client.name ~= 'gopls' then
                 vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', opts)
