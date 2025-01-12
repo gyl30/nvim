@@ -1,17 +1,9 @@
 vim.lsp.set_log_level 'trace'
 require('vim.lsp.log').set_format_func(vim.inspect)
 -- vim.lsp.set_log_level("off")
+--
+vim.diagnostic.config({ virtual_text = false })
 
-vim.lsp.handlers['workspace/diagnostic/refresh'] = function(_, _, ctx)
-    local ns = vim.lsp.diagnostic.get_namespace(ctx.client_id)
-    local bufnr = vim.api.nvim_get_current_buf()
-    vim.diagnostic.reset(ns, bufnr)
-    return true
-end
-
-vim.diagnostic.config {
-    virtual_text = false
-}
 vim.api.nvim_create_autocmd('ColorScheme', {
     callback = function()
         ---- Link LSP semantic highlight groups to TreeSitter token groups
@@ -149,34 +141,8 @@ vim.api.nvim_create_autocmd('ColorScheme', {
         ) -- Red
     end,
 })
-local ns = vim.api.nvim_create_namespace('CurlineDiag')
-vim.api.nvim_create_autocmd('LspAttach', {
-    callback = function(args)
-        vim.api.nvim_create_autocmd('CursorHold', {
-            buffer = args.buf,
-            callback = function()
-                pcall(vim.api.nvim_buf_clear_namespace, args.buf, ns, 0, -1)
-                local hi = { 'Error', 'Warn', 'Info', 'Hint' }
-                local curline = vim.api.nvim_win_get_cursor(0)[1]
-                local diagnostics = vim.diagnostic.get(args.buf, { lnum = curline - 1 })
-                local virt_texts = { { (' '):rep(4) } }
-                for _, diag in ipairs(diagnostics) do
-                    virt_texts[#virt_texts + 1] = { diag.message, 'Diagnostic' .. hi[diag.severity] }
-                end
-                vim.api.nvim_buf_set_extmark(args.buf, ns, curline - 1, 0, {
-                    virt_text = virt_texts,
-                    hl_mode = 'combine'
-                })
-            end
-        })
-    end
-})
 local on_attach = function(client, bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-    vim.cmd([[highlight DiagnosticFloatingError guibg=NONE guifg=NONE gui=underline]])
-    vim.cmd([[highlight DiagnosticFloatingWarn guibg=NONE guifg=NONE gui=underline]])
-    vim.cmd([[highlight DiagnosticFloatingInfo guibg=NONE guifg=NONE gui=underline]])
-    vim.cmd([[highlight DiagnosticFloatingHint guibg=NONE guifg=NONE gui=underline]])
     if client.supports_method 'textDocument/documentHighlight' then
         vim.api.nvim_create_augroup('lsp_document_highlight', { clear = true })
         vim.api.nvim_clear_autocmds { buffer = bufnr, group = 'lsp_document_highlight' }
@@ -258,13 +224,6 @@ local gopls_options = {
                 tidy = true,
                 upgrade_dependency = true,
                 vendor = true,
-            },
-            analyses = {
-                fieldalignment = true,
-                nilness = true,
-                unusedparams = true,
-                unusedwrite = true,
-                useany = true,
             },
             hints = {
                 assignVariableTypes = false,
