@@ -11,25 +11,22 @@ vim.opt.autochdir = true
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
-vim.opt.smarttab = true
 vim.opt.expandtab = true
 vim.opt.wrap = false
 vim.opt.colorcolumn = '100'
-vim.opt.hlsearch = true
-vim.opt.incsearch = true
 vim.opt.termguicolors = true
 vim.opt.ignorecase = true
 vim.opt.autowrite = true
 vim.opt.updatecount = 100
 vim.opt.updatetime = 300
 vim.opt.signcolumn = "no"
-
 vim.opt.foldcolumn = '0'
 vim.opt.foldlevel = 99
 vim.opt.foldlevelstart = 99
 vim.opt.foldenable = true
 vim.opt.foldmethod = 'expr'
 vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.opt.virtualedit = 'onemore'
 
 vim.opt.undofile = true
 vim.opt.completeopt = "menu,menuone,noselect"
