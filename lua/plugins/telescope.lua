@@ -18,10 +18,7 @@ return {
     keys = {
         {
             '<localleader>r', mode = { 'n' }, silent = true, '<cmd>Telescope asynctasks all<cr>',
-        },
-        {
-            '<leader>m', mode = { 'n' }, silent = true, '<cmd>Telescope man_pages sections={\"ALL\"}<cr>',
-        },
+        }
     },
     cmd = "Telescope",
     config = function()
