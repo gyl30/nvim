@@ -293,6 +293,7 @@ local config = function()
     lspconfig.clangd.setup(clangd_options)
     -- lspconfig.ccls.setup(ccls_options)
     lspconfig.rust_analyzer.setup({ capabilities = lsp_capabilities })
+    lspconfig.ts_ls.setup({ capabilities = lsp_capabilities })
     lspconfig.lua_ls.setup(lua_ls_options)
 end
 return {
