@@ -1,9 +1,15 @@
 local function formatter(entry, vim_item)
     local icon, hl, is_default = require("mini.icons").get("lsp", vim_item.kind)
+    local highlights_info = require("colorful-menu").cmp_highlights(entry)
     if is_default then
         icon = "󰞋"
         hl = "CmpItemKind" .. vim_item.kind
     end
+    if highlights_info ~= nil then
+        vim_item.abbr_hl_group = highlights_info.highlights
+        vim_item.abbr = highlights_info.text
+    end
+    vim_item.abbr = vim.trim(vim_item.abbr or "")
     vim_item.kind = icon
     vim_item.kind_hl_group = hl
     vim_item.menu = ({
@@ -31,6 +37,7 @@ return {
             "hrsh7th/cmp-path",
             "hrsh7th/cmp-nvim-lua",
             "hrsh7th/cmp-nvim-lsp",
+            "xzbdmw/colorful-menu.nvim",
             { 'echasnovski/mini.icons', version = false },
         },
         ft           = { "cpp", "hpp", "h", "go", "python" },
