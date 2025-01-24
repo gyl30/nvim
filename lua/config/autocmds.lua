@@ -13,12 +13,12 @@ endfunction
 ]]
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
-  group = vim.api.nvim_create_augroup("FormatOptions", { clear = true }),
-  pattern = { "*" },
-  callback = function()
-    vim.opt_local.fo:remove("o")
-    vim.opt_local.fo:remove("r")
-  end,
+    group = vim.api.nvim_create_augroup("FormatOptions", { clear = true }),
+    pattern = { "*" },
+    callback = function()
+        vim.opt_local.fo:remove("o")
+        vim.opt_local.fo:remove("r")
+    end,
 })
 
 vim.api.nvim_create_autocmd("BufReadPost", {
@@ -116,6 +116,26 @@ vim.api.nvim_create_autocmd("LspAttach", {
         end
         if client.name == 'ccls' then
             require("ccls").setup()
+        end
+    end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+    pattern = { 'qf', 'snacks_dashboard' },
+    callback = function()
+        vim.keymap.set('n', 'q', '<cmd>bd<cr>', { silent = true, buffer = true })
+    end,
+})
+
+vim.api.nvim_create_augroup("empty_buffer_quit_vim", { clear = true })
+vim.api.nvim_create_autocmd("User", {
+    pattern = "BDeletePre *",
+    group = "empty_buffer_quit_vim",
+    callback = function()
+        local bufnr = vim.api.nvim_get_current_buf()
+        local name = vim.api.nvim_buf_get_name(bufnr)
+        if name == "" then
+            vim.cmd "quit"
         end
     end,
 })
