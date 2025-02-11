@@ -5,7 +5,9 @@ local function formatter(entry, vim_item)
         icon = "󰞋"
         hl = "CmpItemKind" .. vim_item.kind
     end
-    if highlights_info ~= nil then
+    if highlights_info == nil then
+        vim_item.abbr = entry:get_completion_item().label
+    else
         vim_item.abbr_hl_group = highlights_info.highlights
         vim_item.abbr = highlights_info.text
     end
@@ -87,6 +89,7 @@ return {
                     mode = "symbol",
                     maxwidth = 80,
                     with_text = true,
+                    fields = { "kind", "abbr", "menu" },
                     format = formatter,
                 },
             }
