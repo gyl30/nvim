@@ -117,7 +117,7 @@ vim.api.nvim_create_autocmd('ColorScheme', {
         }) do
             vim.api.nvim_set_hl(0, k, v)
         end
-
+        vim.api.nvim_set_hl(0, "LspInlayHint", { fg = "#9DA9A0" })
         vim.api.nvim_set_hl(0, '@lsp.mod.defaultLibrary', { italic = true, default = true })
         vim.api.nvim_set_hl(0, '@lsp.mod.deprecated', { strikethrough = true, default = true })
         vim.api.nvim_set_hl(0, '@lsp.mod.mutable.cpp', { italic = true, default = true })
