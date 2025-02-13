@@ -4,6 +4,31 @@ return {
     lazy = false,
     opts = {
         bigfile = { enabled = true },
+        input = { enabled = true, win = { relative = "cursor" } },
+        picker = {
+            enabled = true,
+            layout = {
+                layout = {
+                    preview = true,
+                    backdrop = false,
+                    width = 0.9,
+                    min_width = 80,
+                    height = 0.8,
+                    box = "vertical",
+                    border = "none",
+                    title_pos = "center",
+                    { win = "preview", title = "{preview}", height = 0.6, border = "rounded" },
+                    {
+                        box = "vertical",
+                        border = "rounded",
+                        title = "{title} {live} {flags}",
+                        title_pos = "center",
+                        { win = "list",  border = "none" },
+                        { win = "input", height = 1,     border = "none" },
+                    }
+                },
+            },
+        },
         dashboard = {
             sections = {
                 { section = "terminal",     cmd = "fortune -s | cowsay",          hl = "header", padding = 0, indent = 8, height = 15, },
