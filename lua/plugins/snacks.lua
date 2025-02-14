@@ -3,8 +3,20 @@ return {
     priority = 1000,
     lazy = false,
     opts = {
+        styles = {
+            input = {
+                relative = "cursor",
+                row = 1,
+                col = 0,
+                keys = {
+                    i_esc = { "<esc>", { "cmp_close", "cancel" }, mode = "i", expr = true },
+                },
+            },
+        },
         bigfile = { enabled = true },
-        input = { enabled = true, win = { relative = "cursor" } },
+        input = {
+            enabled = true,
+        },
         picker = {
             enabled = true,
             layout = {
