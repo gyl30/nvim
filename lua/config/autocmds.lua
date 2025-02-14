@@ -95,17 +95,16 @@ vim.api.nvim_create_autocmd('CmdlineEnter', {
 ------------------------------------------ LSP KEYMAP ----------------------------------------------
 local lsp_settings = function(ev)
     vim.keymap.set("n", "gd", function() require("fzf-lua").lsp_definitions({ jump1 = true }) end)
-    vim.keymap.set("n", "gr", function() require("fzf-lua").lsp_references({ jump1 = true }) end)
+    vim.keymap.set("n", "gr",
+        function() require("fzf-lua").lsp_references({ jump1 = true, ignore_current_line = true, includeDeclaration = false }) end)
     vim.keymap.set("n", "gi", function() require("fzf-lua").lsp_implementations() end)
-    vim.keymap.set("n", "gc", function() require("fzf-lua").lsp_code_actions() end)
-    vim.keymap.set("n", "<leader>dd", function() require("fzf-lua").lsp_document_diagnostics() end)
-    vim.keymap.set("n", "<leader>ds", function() require("fzf-lua").lsp_document_symbols() end)
+    vim.keymap.set("n", "<leader>qf", function() require("fzf-lua").lsp_code_actions() end)
+    vim.keymap.set("n", "<leader>d", function() require("fzf-lua").lsp_document_diagnostics() end)
     vim.keymap.set("n", "<leader>ws", function() require("fzf-lua").lsp_workspace_symbols() end)
     vim.keymap.set("n", "<leader>ic", function() require("fzf-lua").lsp_incoming_calls() end)
     vim.keymap.set("n", "<leader>oc", function() require("fzf-lua").lsp_outgoing_calls() end)
     vim.keymap.set("n", "<leader>ih", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
-    vim.keymap.set('n', '<leader>qf', vim.lsp.buf.code_action)
     vim.keymap.set("n", "K", vim.lsp.buf.hover)
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
     if client == nil then
