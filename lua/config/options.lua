@@ -1,4 +1,4 @@
-vim.opt.number = true
+vim.opt.number = false
 vim.opt.showcmd = false
 vim.opt.mouse = ''
 vim.opt.cursorline = true
