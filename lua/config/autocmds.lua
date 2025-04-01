@@ -92,6 +92,14 @@ vim.api.nvim_create_autocmd('CmdlineEnter', {
     end,
 })
 
+if vim.fn.has("nvim-0.11") == 1 then
+    vim.keymap.del({ "n" }, "grn")
+    vim.keymap.del({ "n", "x" }, "gra")
+    vim.keymap.del({ "n" }, "gri")
+    vim.keymap.del({ "n" }, "grr")
+    vim.keymap.del({ "n" }, "gO")
+end
+
 ------------------------------------------ LSP KEYMAP ----------------------------------------------
 local lsp_settings = function(ev)
     vim.keymap.set("n", "gd", function() require("fzf-lua").lsp_definitions({ jump1 = true }) end)
@@ -110,16 +118,33 @@ local lsp_settings = function(ev)
     if client == nil then
         return
     end
-
     if client.server_capabilities.documentFormattingProvider then
         if client.name ~= 'gopls' then
             vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>')
         end
     end
+    if client and client:supports_method('textDocument/foldingRange') then
+        local win = vim.api.nvim_get_current_win()
+        vim.wo[win][0].foldmethod = 'expr'
+        vim.wo[win][0].foldexpr = 'v:lua.vim.lsp.foldexpr()'
+    end
     if client.name == 'ccls' then
         require("ccls").setup()
     end
 end
+vim.api.nvim_create_autocmd('FileType', {
+    group = vim.api.nvim_create_augroup("user_fold_config", {}),
+    callback = function(args)
+        if not vim.w.lsp_folding_enabled then
+            local has_parser, _ = pcall(vim.treesitter.get_parser, args.buf)
+            if has_parser then
+                vim.wo.foldmethod = 'expr'
+                vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+            end
+        end
+    end,
+})
+vim.api.nvim_create_autocmd('LspDetach', { command = 'setl foldexpr<' })
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("user_lsp_config", {}),
     callback = lsp_settings

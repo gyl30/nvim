@@ -1,7 +1,6 @@
 vim.lsp.set_log_level 'trace'
 require('vim.lsp.log').set_format_func(vim.inspect)
 -- vim.lsp.set_log_level("off")
---
 vim.diagnostic.config({ virtual_text = false })
 
 vim.api.nvim_create_autocmd('ColorScheme', {
@@ -142,8 +141,8 @@ vim.api.nvim_create_autocmd('ColorScheme', {
     end,
 })
 local on_attach = function(client, bufnr)
-    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-    if client.supports_method 'textDocument/documentHighlight' then
+    vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
+    if client:supports_method ('textDocument/documentHighlight') then
         vim.api.nvim_create_augroup('lsp_document_highlight', { clear = true })
         vim.api.nvim_clear_autocmds { buffer = bufnr, group = 'lsp_document_highlight' }
         vim.api.nvim_create_autocmd('CursorHold', {
@@ -170,146 +169,18 @@ local on_attach = function(client, bufnr)
     end
 end
 
-local lua_ls_options = {
-    on_attach = on_attach,
-    settings = {
-        Lua = {
-            telemetry = { enable = false },
-            runtime = {
-                version = "LuaJIT",
-                special = {
-                    reload = "require",
-                },
-            },
-            diagnostics = {
-                globals = { "vim", "reload" },
-            },
-            completion = {
-                callSnippet = "Replace"
-            },
-            workspace = {
-                library = {
-                    [vim.fn.expand "$VIMRUNTIME/lua"] = true,
-                    [vim.fn.expand "$VIMRUNTIME/lua/vim/lsp"] = true,
-                    [vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy"] = true,
-                },
-                maxPreload = 100000,
-                preloadFileSize = 10000,
-            },
-        }
-    }
-}
-local gopls_options = {
-    cmd = { "gopls", "serve" },
-    filetypes = { "go", "gomod" },
-    on_attach = on_attach,
-    init_options = {
-        usePlaceholders = true,
-        completeUnimported = true,
-    },
-    settings = {
-        gopls = {
-            staticcheck = true,
-            semanticTokens = true,
-            usePlaceholders = true,
-            completeUnimported = true,
-            gofumpt = true,
-            directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
-            codelenses = {
-                gc_details = false,
-                generate = true,
-                regenerate_cgo = true,
-                run_govulncheck = true,
-                test = true,
-                tidy = true,
-                upgrade_dependency = true,
-                vendor = true,
-            },
-            hints = {
-                assignVariableTypes = false,
-                compositeLiteralFields = false,
-                compositeLiteralTypes = false,
-                constantValues = false,
-                functionTypeParameters = false,
-                parameterNames = false,
-                rangeVariableTypes = false,
-            },
-        },
-    },
-}
-local ccls_options = {
-    init_options = {
-        index = {
-            threads = 8,
-            initialBlacklist = { "/(test|unittests)/" },
-        },
-        cache = {
-            directory = "/tmp/ccls-cache",
-        },
-    }
-}
-local clangd_options = {
-    on_attach = on_attach,
-    settings = {
-        clangd = {
-            init_options = {
-                usePlaceholders = true,
-                completeUnimported = true,
-                clangdFileStatus = true,
-            },
-        }
-    },
-    cmd = {
-        "clangd",
-        "-j=8",
-        "--pretty",
-        "--clang-tidy",
-        "--enable-config",
-        "--background-index",
-        "--cross-file-rename",
-        "--pch-storage=memory",
-        "--all-scopes-completion",
-        "--completion-style=detailed",
-        "--compile-commands-dir=build",
-        "--clang-tidy-checks=bugprone-*, clang-analyzer-*, google-*, modernize-*, performance-*, portability-*, readability-*, -bugprone-too-small-loop-variable, -clang-analyzer-cplusplus.NewDelete, -clang-analyzer-cplusplus.NewDeleteLeaks, -modernize-use-nodiscard, -modernize-avoid-c-arrays, -readability-magic-numbers, -bugprone-branch-clone, -bugprone-signed-char-misuse, -bugprone-unhandled-self-assignment, -clang-diagnostic-implicit-int-float-conversion, -modernize-use-auto, -modernize-use-trailing-return-type, -readability-convert-member-functions-to-static, -readability-make-member-function-const, -readability-qualified-auto, -readability-redundant-access-specifiers,",
-    }
+vim.api.nvim_create_autocmd('LspAttach', {
+    callback = function(args)
+        local bufnr = args.buf
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        on_attach(client, bufnr)
+    end,
+})
 
-}
-
-local config = function()
-    require("neodev").setup({})
-    local lspconfig = require 'lspconfig'
-
-    local lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
-    lsp_capabilities = vim.tbl_extend('force', require('cmp_nvim_lsp').default_capabilities() or {}, lsp_capabilities)
-    gopls_options.capabilities = lsp_capabilities
-    clangd_options.capabilities = lsp_capabilities
-    clangd_options.capabilities.offsetEncoding = { "utf-32" }
-    ccls_options.capabilities = lsp_capabilities
-    lua_ls_options.capabilities = lsp_capabilities
-    lspconfig.gopls.setup(gopls_options)
-    lspconfig.jsonls.setup({ capabilities = lsp_capabilities })
-    lspconfig.pyright.setup({ capabilities = lsp_capabilities })
-    lspconfig.clangd.setup(clangd_options)
-    -- lspconfig.ccls.setup(ccls_options)
-    lspconfig.rust_analyzer.setup({ capabilities = lsp_capabilities })
-    lspconfig.ts_ls.setup({ capabilities = lsp_capabilities })
-    lspconfig.lua_ls.setup(lua_ls_options)
+local lsp_configs = {}
+for _, v in ipairs(vim.api.nvim_get_runtime_file('lsp/*', true)) do
+    local name = vim.fn.fnamemodify(v, ':t:r')
+    lsp_configs[name] = true
 end
-return {
-    'neovim/nvim-lspconfig',
-    config = config,
-    event = { "BufReadPre", "BufNewFile" },
-    dependencies = {
-        { 'iguanacucumber/magazine.nvim' },
-        { 'hrsh7th/cmp-nvim-lsp' },
-        { 'ranjithshegde/ccls.nvim' },
-        { 'p00f/clangd_extensions.nvim' },
-        {
-            'ray-x/lsp_signature.nvim',
-            config = function()
-                require 'lsp_signature'.setup()
-            end
-        },
-    }
-}
+
+vim.lsp.enable(vim.tbl_keys(lsp_configs))
