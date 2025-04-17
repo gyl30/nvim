@@ -1,12 +1,7 @@
 return {
     "gyl30/translate",
-    config = function()
-        vim.cmd [[
-            vmap <silent> <leader>t <Cmd>lua require("translate").translateV()<cr>
-            nmap <silent> <leader>t <Cmd>lua require("translate").translateN()<cr>
-
-            command! Translate  lua require("translate").translateN()
-            command! TranslateV lua require("translate").translateV()
-        ]]
-    end
+    keys = {
+        { "<localleader>t", module = { "n" }, function() require("translate").translateN() end },
+        { "<localleader>t", module = { "v" }, function() require("translate").translateV() end },
+    }
 }

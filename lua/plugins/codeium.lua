@@ -3,9 +3,9 @@ return {
         "Exafunction/codeium.nvim",
         dependencies = {
             "nvim-lua/plenary.nvim",
-            "iguanacucumber/magazine.nvim",
+            "hrsh7th/nvim-cmp",
         },
-        event        = "VeryLazy",
+        lazy = true,
         config       = function()
             require("codeium").setup({})
         end,
@@ -13,7 +13,7 @@ return {
     },
     {
         "Exafunction/codeium.vim",
-        event        = "VeryLazy",
+        lazy = true,
         config = function()
             vim.keymap.set("i", "<C-g>", function() return vim.fn["codeium#Accept"]() end, { expr = true })
             vim.keymap.set("i", "<C-;>", function() return vim.fn["codeium#CycleCompletions"](1) end, { expr = true })

@@ -1,6 +1,8 @@
 return {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    ft = { "go", "cpp", "h", "hpp", "python" },
+    lazy = true,
     config = function()
         local configs = require("nvim-treesitter.configs")
         configs.setup({

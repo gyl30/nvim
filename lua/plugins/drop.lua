@@ -1,6 +1,6 @@
 return {
   "folke/drop.nvim",
-  event = "VimEnter",
+  event = "UIEnter",
   config = function()
     require("drop").setup()
   end,

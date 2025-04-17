@@ -41,15 +41,6 @@ local leaderf_cfg = function()
         Function = { { "<ESC>", ':exec g:Lf_py "functionExplManager.quit()"<CR>' } },
         Colorscheme = { { "<ESC>", ':exec g:Lf_py "colorschemeExplManager.quit()"<CR>' } },
     }
-    --    vim.cmd('silent! unmap<leader>f')
-    --   vim.cmd('silent! unmap<leader>b')
-    vim.cmd [[
-        nnoremap <silent><nowait> <localleader>f :LeaderfFunction<cr>
-        nnoremap <silent><nowait> <localleader>m :LeaderfMru<cr>
-        nnoremap <silent><nowait> <C-p> :LeaderfFile<cr>
-        nnoremap <silent><nowait> <leader>fh :LeaderfHelp<cr>
-        nnoremap <silent><nowait> <leader>fl :LeaderfLine<cr>
-    ]]
 end
 
 return {
@@ -60,5 +51,10 @@ return {
         vim.g.Lf_ShortcutF = ""
         vim.g.Lf_ShortcutB = ""
     end,
-    event = "VeryLazy",
+    cmd = { 'LeaderfFile', "LeaderfFunction", "LeaderfMru" },
+    keys = {
+        { "<C-p>",          "<cmd>LeaderfFile<cr>",     desc = "LeaderfFile" },
+        { "<localleader>f", "<cmd>LeaderfFunction<cr>", desc = "LeaderfFunction" },
+        { "<localleader>m", "<cmd>LeaderfMru<cr>",      desc = "LeaderfMru" },
+    },
 }

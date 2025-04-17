@@ -1,3 +1,5 @@
 return {
-    "vim-scripts/DoxygenToolkit.vim", event = 'VeryLazy'
+    "vim-scripts/DoxygenToolkit.vim",
+    ft = { 'c', 'cpp', 'h', 'hpp' },
+    lazy = true,
 }

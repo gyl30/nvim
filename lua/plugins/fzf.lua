@@ -1,8 +1,15 @@
 return {
     "ibhagwan/fzf-lua",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    keys = {
+        { "gr",         function() require("fzf-lua").lsp_references({ jump1 = true, ignore_current_line = true, includeDeclaration = false }) end, desc = "References" },
+        { "gd",         function() require("fzf-lua").lsp_definitions() end,                                                                        desc = "Definitions" },
+        { "gi",         function() require("fzf-lua").lsp_implementations() end,                                                                    desc = "Implementations" },
+        { "<leader>qf", function() require("fzf-lua").lsp_code_actions() end,                                                                       desc = "Code Actions" },
+        { "<leader>d",  function() require("fzf-lua").lsp_document_diagnostics() end,                                                               desc = "Document Diagnostics" },
+    },
     config = function()
         require("fzf-lua").setup({
+            defaults = { file_icons = "mini" },
             fzf_opts = {
                 ['--info']    = false,
                 ['--no-info'] = '',
