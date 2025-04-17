@@ -17,7 +17,6 @@ require("lazy").setup({
     },
     install = {
         missing = true,
-        colorscheme = { "dracula" },
     },
     performance = {
         cache = {
@@ -30,6 +29,7 @@ require("lazy").setup({
                 "tohtml",
                 "tutor",
                 "zipPlugin",
+                "netrwPlugin",
             },
         },
     },
