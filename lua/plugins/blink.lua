@@ -2,17 +2,26 @@ return {
     'saghen/blink.cmp',
     version = '1.*',
     event = "InsertEnter",
+    dependencies = {
+        "moyiz/blink-emoji.nvim",
+        "giuxtaposition/blink-cmp-copilot",
+    },
     opts = {
         keymap = {
             ['<C-k>'] = { 'show_signature', 'hide_signature', 'fallback' },
             ['<S-Tab>'] = { 'select_prev', 'fallback' },
             ['<Tab>'] = { 'select_next', 'fallback' },
+            ['<C-p>'] = { 'select_prev', 'fallback' },
+            ['<C-n>'] = { 'select_next', 'fallback' },
+            ['<CR>'] = { 'accept', 'fallback' },
         },
         completion = {
+            accept = { auto_brackets = { enabled = true } },
             documentation = { auto_show = true, },
             list = {
                 selection = { preselect = false, auto_insert = true }
             },
+            trigger = { prefetch_on_insert = false },
             menu = {
                 draw = {
                     align_to = 'label',
@@ -46,6 +55,23 @@ return {
                 border = 'single',
                 show_documentation = true,
             }
+        },
+        sources = {
+            default = { "lsp", "path", "snippets", "buffer", "copilot", "emoji" },
+            providers = {
+                copilot = {
+                    name = "copilot",
+                    module = "blink-cmp-copilot",
+                    score_offset = 100,
+                    async = true,
+                },
+                emoji = {
+                    module = "blink-emoji",
+                    name = "Emoji",
+                    score_offset = 15,
+                    opts = { insert = true },
+                },
+            },
         },
     },
     opts_extend = { "sources.default" }
