@@ -37,13 +37,6 @@ return {
                             text = function(ctx) return ctx.kind_icon .. ctx.icon_gap end,
                             highlight = function(ctx) return { { group = ctx.kind_hl, priority = 20000 } } end,
                         },
-
-                        label = {
-                            width = { fill = true },
-                            highlight = function(ctx)
-                                return require("colorful-menu").blink_components_highlight(ctx)
-                            end,
-                        },
                     },
                 }
             }
@@ -70,6 +63,13 @@ return {
                     name = "Emoji",
                     score_offset = 15,
                     opts = { insert = true },
+                    should_show_items = function()
+                        return vim.tbl_contains(
+                            { "gitcommit", "markdown" },
+                            vim.o.filetype
+                        )
+                    end,
+
                 },
             },
         },

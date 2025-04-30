@@ -9,7 +9,7 @@ function! ToUTF8()
     w
 endfunction
 "autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :silent! call ToUTF8()
-"autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :%retab
+autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :%retab
 ]]
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
@@ -49,39 +49,11 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
         end
     end,
 })
-vim.api.nvim_create_autocmd("BufWritePre", {
-    group = vim.api.nvim_create_augroup("better_backup", { clear = true }),
-    callback = function(event)
-        local file = vim.loop.fs_realpath(event.match) or event.match
-        local backup = vim.fn.fnamemodify(file, ":p:~:h")
-        backup = backup:gsub("[/\\]", "%%")
-        vim.go.backupext = backup
-    end,
-})
 
 vim.api.nvim_create_autocmd({ "VimResized" }, {
     group = vim.api.nvim_create_augroup("user_resize_splits", { clear = true }),
     callback = function()
         vim.cmd("tabdo wincmd =")
-    end,
-})
-
-vim.api.nvim_create_autocmd("CompleteDone", {
-    pattern = "*.go",
-    callback = function()
-        local params = vim.lsp.util.make_range_params()
-        params.context = { only = { "source.organizeImports" } }
-        local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 5000)
-
-        for _, res in pairs(result or {}) do
-            for _, r in pairs(res.result or {}) do
-                if next(r.edit) then
-                    vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
-                elseif next(r.command) then
-                    vim.lsp.buf.execute_command(r.command)
-                end
-            end
-        end
     end,
 })
 
@@ -101,28 +73,100 @@ if vim.fn.has("nvim-0.11") == 1 then
 end
 
 ------------------------------------------ LSP KEYMAP ----------------------------------------------
-local lsp_settings = function(ev)
+local lsp_settings = function(client, buf)
     vim.keymap.set("n", "<leader>ih", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
     vim.keymap.set("n", "K", vim.lsp.buf.hover)
-    local client = vim.lsp.get_client_by_id(ev.data.client_id)
-    if client == nil then
-        return
+
+    local methods = vim.lsp.protocol.Methods
+
+    if client:supports_method(methods.textDocument_documentHighlight) then
+        local under_cursor_highlights_group =
+            vim.api.nvim_create_augroup('CursorHighlights', { clear = false })
+        vim.api.nvim_create_autocmd({ 'CursorHold', 'InsertLeave' }, {
+            group = under_cursor_highlights_group,
+            desc = 'Highlight references under the cursor',
+            buffer = buf,
+            callback = vim.lsp.buf.document_highlight,
+        })
+        vim.api.nvim_create_autocmd({ 'CursorMoved', 'InsertEnter', 'BufLeave' }, {
+            group = under_cursor_highlights_group,
+            desc = 'Clear highlight references',
+            buffer = buf,
+            callback = vim.lsp.buf.clear_references,
+        })
     end
+
+    if client:supports_method(methods.textDocument_inlayHint) and vim.g.inlay_hints then
+        local inlay_hints_group = vim.api.nvim_create_augroup('mariasolos/toggle_inlay_hints', { clear = false })
+        vim.defer_fn(function()
+            local mode = vim.api.nvim_get_mode().mode
+            vim.lsp.inlay_hint.enable(mode == 'n' or mode == 'v', { bufnr = buf })
+        end, 500)
+
+        vim.api.nvim_create_autocmd('InsertEnter', {
+            group = inlay_hints_group,
+            desc = 'Enable inlay hints',
+            buffer = buf,
+            callback = function()
+                if vim.g.inlay_hints then
+                    vim.lsp.inlay_hint.enable(false, { buffnr = buf })
+                end
+            end,
+        })
+
+        vim.api.nvim_create_autocmd('InsertLeave', {
+            group = inlay_hints_group,
+            desc = 'Disable inlay hints',
+            buffer = buf,
+            callback = function()
+                if vim.g.inlay_hints then
+                    vim.lsp.inlay_hint.enable(true, { bufnr = buf })
+                end
+            end,
+        })
+    end
+
     if client.server_capabilities.documentFormattingProvider then
-        if client.name ~= 'gopls' then
-            vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>')
-        end
+        vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>')
     end
     if client and client:supports_method('textDocument/foldingRange') then
         local win = vim.api.nvim_get_current_win()
         vim.wo[win][0].foldmethod = 'expr'
         vim.wo[win][0].foldexpr = 'v:lua.vim.lsp.foldexpr()'
     end
-    if client.name == 'ccls' then
-        require("ccls").setup()
+
+    if client.name == 'gopls' then
+        vim.api.nvim_create_autocmd("BufWritePre", {
+            group = vim.api.nvim_create_augroup("GoplsSourceOrganizeImports", {}),
+            callback = function()
+                local params = {
+                    textDocument = vim.lsp.util.make_text_document_params(0),
+                    range = vim.lsp.util.make_range_params(0, 'utf-8').range,
+                    context = {
+                        only = { 'source.organizeImports' },
+                        diagnostics = {},
+                    },
+                }
+                local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 5000)
+                for _, res in pairs(result or {}) do
+                    for _, r in pairs(res.result or {}) do
+                        if next(r.edit) then
+                            vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
+                        elseif next(r.command) then
+                            client:exec_cmd({
+                                title = "Organize Imports",
+                                command = r.command,
+                                arguments = { vim.api.nvim_buf_get_name(buf) },
+                            })
+                        end
+                    end
+                end
+            end,
+        })
     end
 end
+
 vim.api.nvim_create_autocmd('FileType', {
     group = vim.api.nvim_create_augroup("user_fold_config", {}),
     callback = function(args)
@@ -138,7 +182,13 @@ vim.api.nvim_create_autocmd('FileType', {
 vim.api.nvim_create_autocmd('LspDetach', { command = 'setl foldexpr<' })
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("user_lsp_config", {}),
-    callback = lsp_settings
+    callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if not client then
+            return
+        end
+        lsp_settings(client, args.buf)
+    end,
 })
 
 vim.api.nvim_create_autocmd('FileType', {

@@ -1,7 +1,7 @@
 return {
     "ibhagwan/fzf-lua",
     keys = {
-        { "gr",         function() require("fzf-lua").lsp_references({ jump1 = true, ignore_current_line = true, includeDeclaration = false }) end, desc = "References" },
+        { "gr",         function() require("fzf-lua").lsp_references({ jump1 = true, ignore_current_line = true}) end, desc = "References" },
         { "gd",         function() require("fzf-lua").lsp_definitions() end,                                                                        desc = "Definitions" },
         { "gi",         function() require("fzf-lua").lsp_implementations() end,                                                                    desc = "Implementations" },
         { "<leader>qf", function() require("fzf-lua").lsp_code_actions() end,                                                                       desc = "Code Actions" },
