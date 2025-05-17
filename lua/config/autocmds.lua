@@ -8,8 +8,8 @@ function! ToUTF8()
     set fileformat=unix
     w
 endfunction
-"autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :silent! call ToUTF8()
-autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :%retab
+" autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp,*.go :silent! call ToUTF8()
+" autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :%retab
 ]]
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
@@ -51,19 +51,19 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
 })
 
 vim.api.nvim_create_autocmd({ "VimResized" }, {
-    group = vim.api.nvim_create_augroup("user_resize_splits", { clear = true }),
+    group = vim.api.nvim_create_augroup("UserResizeSplits", { clear = true }),
     callback = function()
         vim.cmd("tabdo wincmd =")
     end,
 })
 
-vim.api.nvim_create_autocmd('CmdlineEnter', {
-    group = vim.api.nvim_create_augroup("update_cmdheight", {}),
-    callback = function()
-        vim.opt_local.cmdheight = 1
-    end,
-})
-
+-- vim.api.nvim_create_autocmd('CmdlineEnter', {
+--     group = vim.api.nvim_create_augroup("UpdateCmdheight", {}),
+--     callback = function()
+--         vim.opt_local.cmdheight = 1
+--     end,
+-- })
+--
 if vim.fn.has("nvim-0.11") == 1 then
     vim.keymap.del({ "n" }, "grn")
     vim.keymap.del({ "n", "x" }, "gra")
@@ -98,14 +98,14 @@ local lsp_settings = function(client, buf)
     end
 
     if client:supports_method(methods.textDocument_inlayHint) and vim.g.inlay_hints then
-        local inlay_hints_group = vim.api.nvim_create_augroup('mariasolos/toggle_inlay_hints', { clear = false })
+        local InlayHintsGroup = vim.api.nvim_create_augroup('ToggleInlayHints', { clear = false })
         vim.defer_fn(function()
             local mode = vim.api.nvim_get_mode().mode
             vim.lsp.inlay_hint.enable(mode == 'n' or mode == 'v', { bufnr = buf })
         end, 500)
 
         vim.api.nvim_create_autocmd('InsertEnter', {
-            group = inlay_hints_group,
+            group = InlayHintsGroup,
             desc = 'Enable inlay hints',
             buffer = buf,
             callback = function()
@@ -116,7 +116,7 @@ local lsp_settings = function(client, buf)
         })
 
         vim.api.nvim_create_autocmd('InsertLeave', {
-            group = inlay_hints_group,
+            group = InlayHintsGroup,
             desc = 'Disable inlay hints',
             buffer = buf,
             callback = function()
@@ -168,7 +168,7 @@ local lsp_settings = function(client, buf)
 end
 
 vim.api.nvim_create_autocmd('FileType', {
-    group = vim.api.nvim_create_augroup("user_fold_config", {}),
+    group = vim.api.nvim_create_augroup("UserFoldConfig", {}),
     callback = function(args)
         if not vim.w.lsp_folding_enabled then
             local has_parser, _ = pcall(vim.treesitter.get_parser, args.buf)
@@ -181,7 +181,7 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 vim.api.nvim_create_autocmd('LspDetach', { command = 'setl foldexpr<' })
 vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("user_lsp_config", {}),
+    group = vim.api.nvim_create_augroup("UserLspConfig", {}),
     callback = function(args)
         local client = vim.lsp.get_client_by_id(args.data.client_id)
         if not client then
@@ -198,10 +198,9 @@ vim.api.nvim_create_autocmd('FileType', {
     end,
 })
 
-vim.api.nvim_create_augroup("empty_buffer_quit_vim", { clear = true })
 vim.api.nvim_create_autocmd("User", {
     pattern = "BDeletePre *",
-    group = "empty_buffer_quit_vim",
+    group = vim.api.nvim_create_augroup("EmptyBufferQuitVim", { clear = true }),
     callback = function()
         local bufnr = vim.api.nvim_get_current_buf()
         local name = vim.api.nvim_buf_get_name(bufnr)

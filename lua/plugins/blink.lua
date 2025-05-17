@@ -3,8 +3,27 @@ return {
     version = '1.*',
     event = "InsertEnter",
     dependencies = {
+
+        {
+            'Exafunction/codeium.nvim',
+            config = function()
+                require("codeium").setup({
+                })
+            end
+        },
+        'saghen/blink.compat',
         "moyiz/blink-emoji.nvim",
         "giuxtaposition/blink-cmp-copilot",
+        {
+            "supermaven-inc/supermaven-nvim",
+            opts = {
+                disable_inline_completion = true, -- disables inline completion for use with cmp
+                disable_keymaps = true            -- disables built in keymaps for more manual control
+            }
+        },
+        {
+            "huijiro/blink-cmp-supermaven"
+        },
     },
     opts = {
         keymap = {
@@ -50,7 +69,7 @@ return {
             }
         },
         sources = {
-            default = { "lsp", "path", "snippets", "buffer", "copilot", "emoji" },
+            default = { "lsp", "path", "snippets", "buffer", "copilot", "emoji", "supermaven", "codeium" },
             providers = {
                 copilot = {
                     name = "copilot",
@@ -58,6 +77,12 @@ return {
                     score_offset = 100,
                     async = true,
                 },
+                supermaven = {
+                    name = 'supermaven',
+                    module = "blink-cmp-supermaven",
+                    async = true
+                },
+                codeium = { name = 'Codeium', module = 'codeium.blink', async = true },
                 emoji = {
                     module = "blink-emoji",
                     name = "Emoji",
@@ -69,7 +94,6 @@ return {
                             vim.o.filetype
                         )
                     end,
-
                 },
             },
         },
