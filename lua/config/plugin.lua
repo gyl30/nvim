@@ -15,6 +15,14 @@ require("lazy").setup({
     rocks = {
         enabled = false,
     },
+    transparent = true,
+    styles = {
+        floats = "transparent",
+        sidebars = "transparent",
+    },
+    ui = {
+        backdrop = 100,
+    },
     install = {
         missing = true,
     },
