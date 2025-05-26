@@ -1,6 +1,6 @@
 vim.lsp.set_log_level 'trace'
-require('vim.lsp.log').set_format_func(vim.inspect)
-vim.lsp.set_log_level("off")
+-- require('vim.lsp.log').set_format_func(vim.inspect)
+-- vim.lsp.set_log_level("off")
 vim.diagnostic.config({ virtual_text = false })
 
 vim.api.nvim_create_autocmd('ColorScheme', {
@@ -142,9 +142,7 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 })
 local on_attach = function(client, bufnr)
     vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
-    if client:supports_method ('textDocument/documentHighlight') then
-        vim.api.nvim_create_augroup('lsp_document_highlight', { clear = true })
-        vim.api.nvim_clear_autocmds { buffer = bufnr, group = 'lsp_document_highlight' }
+    if client:supports_method('textDocument/documentHighlight') then
         vim.api.nvim_create_autocmd('CursorHold', {
             callback = vim.lsp.buf.document_highlight,
             buffer = bufnr,
@@ -169,14 +167,12 @@ local on_attach = function(client, bufnr)
     end
 end
 
-vim.api.nvim_create_autocmd('LspAttach', {
-    callback = function(args)
-        local bufnr = args.buf
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-        on_attach(client, bufnr)
-    end,
-})
 
+
+vim.lsp.config("*", {
+    on_attach = on_attach,
+    root_markers = { ".git", },
+})
 local lsp_configs = {}
 for _, v in ipairs(vim.api.nvim_get_runtime_file('lsp/*', true)) do
     local name = vim.fn.fnamemodify(v, ':t:r')
