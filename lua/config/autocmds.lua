@@ -13,7 +13,6 @@ endfunction
 ]]
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
-    group = vim.api.nvim_create_augroup("FormatOptions", { clear = true }),
     pattern = { "*" },
     callback = function()
         vim.opt_local.fo:remove("o")
@@ -33,25 +32,21 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 })
 vim.api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, {
     callback = function()
-        local ok, cl = pcall(vim.api.nvim_win_get_var, 0, "auto-cursorline")
-        if ok and cl then
+        if vim.w.auto_cursorline then
             vim.wo.cursorline = true
-            vim.api.nvim_win_del_var(0, "auto-cursorline")
+            vim.w.auto_cursorline = nil
         end
     end,
 })
 vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
     callback = function()
-        local cl = vim.wo.cursorline
-        if cl then
-            vim.api.nvim_win_set_var(0, "auto-cursorline", cl)
+        if vim.wo.cursorline then
+            vim.w.auto_cursorline = true
             vim.wo.cursorline = false
         end
     end,
 })
-
 vim.api.nvim_create_autocmd({ "VimResized" }, {
-    group = vim.api.nvim_create_augroup("UserResizeSplits", { clear = true }),
     callback = function()
         vim.cmd("tabdo wincmd =")
     end,
@@ -200,7 +195,6 @@ vim.api.nvim_create_autocmd('FileType', {
 
 vim.api.nvim_create_autocmd("User", {
     pattern = "BDeletePre *",
-    group = vim.api.nvim_create_augroup("EmptyBufferQuitVim", { clear = true }),
     callback = function()
         local bufnr = vim.api.nvim_get_current_buf()
         local name = vim.api.nvim_buf_get_name(bufnr)
