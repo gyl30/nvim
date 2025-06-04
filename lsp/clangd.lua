@@ -3,9 +3,6 @@ return {
         '.clangd',
         '.clang-tidy',
         '.clang-format',
-        'build/debug/compile_commands.json',
-        'build/release/compile_commands.json',
-        'build/compile_commands.json',
         'compile_commands.json',
         'compile_flags.txt',
         'configure.ac',
@@ -18,7 +15,6 @@ return {
                 editsNearCursor = true,
             },
         },
-        offsetEncoding = { 'utf-8', 'utf-16' },
     },
     settings = {
         clangd = {
