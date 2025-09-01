@@ -1,9 +1,17 @@
+local function blink_highlight(ctx)
+    local hl = "BlinkCmpKind" .. ctx.kind
+        or require("blink.cmp.completion.windows.render.tailwind").get_hl(ctx)
+    if vim.tbl_contains({ "Path" }, ctx.source_name) then
+        local dev_icon, dev_hl = require("nvim-web-devicons").get_icon(ctx.label)
+        if dev_icon then hl = dev_hl end
+    end
+    return hl
+end
 return {
     'saghen/blink.cmp',
     version = '1.*',
     event = "InsertEnter",
     dependencies = {
-
         {
             'Exafunction/codeium.nvim',
             config = function()
@@ -11,9 +19,18 @@ return {
                 })
             end
         },
+        {
+            "onsails/lspkind.nvim",
+            opts = {
+                symbol_map = {
+                    spell = "󰓆",
+                    cmdline = "",
+                    markdown = "",
+                },
+            },
+        },
         'saghen/blink.compat',
         "moyiz/blink-emoji.nvim",
-        "giuxtaposition/blink-cmp-copilot",
         {
             "supermaven-inc/supermaven-nvim",
             opts = {
@@ -35,6 +52,10 @@ return {
             ['<CR>'] = { 'accept', 'fallback' },
         },
         completion = {
+            appearance = {
+                use_nvim_cmp_as_default = false,
+                nerd_font_variant = "normal",
+            },
             accept = { auto_brackets = { enabled = true } },
             documentation = { auto_show = true, },
             list = {
@@ -44,17 +65,52 @@ return {
             menu = {
                 draw = {
                     align_to = 'label',
-                    columns = { { 'label' }, { 'kind_icon' }, { 'source_name' } },
+                    -- columns = { { 'label' }, { 'kind_icon' }, { 'source_name' } },
                     -- columns = { { 'label', 'label_description', gap = 1 }, { 'kind_icon' }, { 'source_name' } },
-                    -- columns = {
-                    --     { "kind_icon", "label",       "label_description", gap = 1 },
-                    --     { "kind",      "source_name", gap = 1 },
-                    -- },
+                    columns = {
+                        { "kind_icon", "label",       "label_description", gap = 1 },
+                        { "kind",      "source_name", gap = 1 },
+                    },
+                    treesitter = { 'lsp' },
                     components = {
                         kind_icon = {
                             ellipsis = false,
-                            text = function(ctx) return ctx.kind_icon .. ctx.icon_gap end,
-                            highlight = function(ctx) return { { group = ctx.kind_hl, priority = 20000 } } end,
+                            text = function(ctx)
+                                local lspkind = require("lspkind")
+                                local icon = ctx.kind_icon
+
+                                if vim.tbl_contains({ "Path" }, ctx.source_name) then
+                                    local dev_icon, _ =
+                                        require("nvim-web-devicons").get_icon(
+                                            ctx.label
+                                        )
+                                    if dev_icon then icon = dev_icon end
+                                else
+                                    if
+                                        vim.tbl_contains({
+                                            "spell",
+                                            "cmdline",
+                                            "markdown",
+                                            "Dict",
+                                        }, ctx.source_name)
+                                    then
+                                        icon = lspkind.symbolic(
+                                            ctx.source_name,
+                                            { mode = "symbol" }
+                                        )
+                                    else
+                                        icon = lspkind.symbolic(ctx.kind, {
+                                            mode = "symbol",
+                                        })
+                                    end
+                                end
+
+                                return icon .. ctx.icon_gap
+                            end,
+                            highlight = function(ctx) return blink_highlight(ctx) end,
+                        },
+                        kind = {
+                            highlight = function(ctx) return blink_highlight(ctx) end,
                         },
                     },
                 }
@@ -65,17 +121,14 @@ return {
             enabled = true,
             window = {
                 border = 'single',
-                show_documentation = true,
+                show_documentation = false,
             }
         },
         sources = {
-            default = { "lsp", "path", "snippets", "buffer", "copilot", "emoji", "supermaven", "codeium" },
+            default = { "lsp", "path", "snippets", "buffer", "emoji", "supermaven", "codeium" },
             providers = {
-                copilot = {
-                    name = "copilot",
-                    module = "blink-cmp-copilot",
-                    score_offset = 100,
-                    async = true,
+                lsp = {
+                    fallbacks = {},
                 },
                 supermaven = {
                     name = 'supermaven',

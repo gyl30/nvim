@@ -1,5 +1,6 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ';'
+vim.cmd('mapclear')
 vim.loader.enable()
 require("config.keymaps")
 require("config.plugin")
@@ -9,7 +10,7 @@ require("config.statusline")
 require("config.lsp")
 vim.cmd [[
     set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175
-    colorscheme slate 
+    colorscheme slate
     highlight ModeMsg     guibg=NONE guibg=NONE ctermfg=10 guifg=NvimLightGreen
     highlight Normal      guibg=NONE
     highlight MatchParen  guibg=NONE guifg=yellow gui=underline

@@ -1,6 +1,6 @@
 vim.lsp.set_log_level 'trace'
 -- require('vim.lsp.log').set_format_func(vim.inspect)
--- vim.lsp.set_log_level("off")
+vim.lsp.set_log_level("off")
 vim.diagnostic.config({ virtual_text = false })
 
 vim.api.nvim_create_autocmd('ColorScheme', {

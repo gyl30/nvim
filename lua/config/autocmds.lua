@@ -52,21 +52,6 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
     end,
 })
 
--- vim.api.nvim_create_autocmd('CmdlineEnter', {
---     group = vim.api.nvim_create_augroup("UpdateCmdheight", {}),
---     callback = function()
---         vim.opt_local.cmdheight = 1
---     end,
--- })
---
-if vim.fn.has("nvim-0.11") == 1 then
-    vim.keymap.del({ "n" }, "grn")
-    vim.keymap.del({ "n", "x" }, "gra")
-    vim.keymap.del({ "n" }, "gri")
-    vim.keymap.del({ "n" }, "grr")
-    vim.keymap.del({ "n" }, "gO")
-end
-
 ------------------------------------------ LSP KEYMAP ----------------------------------------------
 local lsp_settings = function(client, buf)
     vim.keymap.set("n", "<leader>ih", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
