@@ -16,6 +16,9 @@ return {
             'Exafunction/codeium.nvim',
             config = function()
                 require("codeium").setup({
+                    enable_cmp_source = false,
+                    enable_chat = true,
+                    quiet = true,
                 })
             end
         },
@@ -31,16 +34,6 @@ return {
         },
         'saghen/blink.compat',
         "moyiz/blink-emoji.nvim",
-        {
-            "supermaven-inc/supermaven-nvim",
-            opts = {
-                disable_inline_completion = true, -- disables inline completion for use with cmp
-                disable_keymaps = true            -- disables built in keymaps for more manual control
-            }
-        },
-        {
-            "huijiro/blink-cmp-supermaven"
-        },
     },
     opts = {
         keymap = {
@@ -116,7 +109,7 @@ return {
                 }
             }
         },
-        fuzzy = { implementation = "prefer_rust_with_warning" },
+        fuzzy = { implementation = "lua" },
         signature = {
             enabled = true,
             window = {
@@ -125,15 +118,10 @@ return {
             }
         },
         sources = {
-            default = { "lsp", "path", "snippets", "buffer", "emoji", "supermaven", "codeium" },
+            default = { "lsp", "path", "snippets", "buffer", "emoji", "codeium" },
             providers = {
                 lsp = {
                     fallbacks = {},
-                },
-                supermaven = {
-                    name = 'supermaven',
-                    module = "blink-cmp-supermaven",
-                    async = true
                 },
                 codeium = { name = 'Codeium', module = 'codeium.blink', async = true },
                 emoji = {
