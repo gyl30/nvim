@@ -10,6 +10,7 @@ function! ToUTF8()
 endfunction
 " autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp,*.go :silent! call ToUTF8()
 " autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :%retab
+command! BufOnly silent! execute "%bd|e#|bd#"
 ]]
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
@@ -57,6 +58,13 @@ local lsp_settings = function(client, buf)
     vim.keymap.set("n", "<leader>ih", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
     vim.keymap.set("n", "K", vim.lsp.buf.hover)
+    vim.keymap.set('x', 'an', function()
+        vim.lsp.buf.selection_range('outer')
+    end, { desc = "vim.lsp.buf.selection_range('outer')" })
+
+    vim.keymap.set('x', 'in', function()
+        vim.lsp.buf.selection_range('inner')
+    end, { desc = "vim.lsp.buf.selection_range('inner')" })
 
     local methods = vim.lsp.protocol.Methods
 
