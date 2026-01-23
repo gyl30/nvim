@@ -1,36 +1,37 @@
 local M = {}
 
---- Window bar that shows the current file path (in a fancy way).
 ---@return string
 function M.render()
-    -- Get the path and expand variables.
-    local path = vim.fs.normalize(vim.fn.expand '%:p' --[[@as string]])
+    local current_file = vim.fn.expand '%:p'
+    local path = vim.fs.normalize(current_file)
 
-    -- No special styling for diff views.
     if vim.startswith(path, 'diffview') then
         return string.format('%%#Winbar#%s', path)
     end
 
-    -- Replace slashes by arrows.
     local separator = ' %#WinbarSeparator# '
 
-    local prefix, prefix_path = '', ''
+    local prefix = ''
 
-    -- If the window gets too narrow, shorten the path and drop the prefix.
     if vim.api.nvim_win_get_width(0) < math.floor(vim.o.columns / 3) then
         path = vim.fn.pathshorten(path)
     else
-        if prefix ~= '' then
-            path = path:gsub('^' .. vim.pesc(prefix_path), '')
-            prefix = string.format('%%#WinBarDir#%s %s%s', '󰉋', prefix, separator)
+        local root = vim.fs.root(0, '.git')
+        if root then
+            root = vim.fs.normalize(root)
+            local root_name = vim.fs.basename(root)
+            prefix = string.format('%%#WinBarDir#%s %s%s', '󰉋', root_name, separator)
+            path = path:gsub('^' .. vim.pesc(root), '')
+        else
+            local home = vim.fs.normalize(vim.env.HOME)
+            if vim.startswith(path, home) then
+                path = path:gsub('^' .. vim.pesc(home), '~')
+            end
         end
     end
 
-    -- Remove leading slash.
     path = path:gsub('^/', '')
-
     return table.concat {
-        ' ',
         prefix,
         table.concat(
             vim.iter(vim.split(path, '/'))
@@ -48,10 +49,10 @@ vim.api.nvim_create_autocmd('BufWinEnter', {
     desc = 'Attach winbar',
     callback = function(args)
         if
-            not vim.api.nvim_win_get_config(0).zindex     -- Not a floating window
-            and vim.bo[args.buf].buftype == ''            -- Normal buffer
-            and vim.api.nvim_buf_get_name(args.buf) ~= '' -- Has a file name
-            and not vim.wo[0].diff                        -- Not in diff mode
+            not vim.api.nvim_win_get_config(0).zindex
+            and vim.bo[args.buf].buftype == ''
+            and vim.api.nvim_buf_get_name(args.buf) ~= ''
+            and not vim.wo[0].diff
         then
             vim.wo.winbar = "%{%v:lua.require'config.winbar'.render()%}"
         end
