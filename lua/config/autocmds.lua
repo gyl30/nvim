@@ -29,24 +29,8 @@ vim.api.nvim_create_autocmd("BufReadPost", {
             pcall(vim.api.nvim_win_set_cursor, 0, mark)
         end
     end,
-    desc = "go to last loc when opening a buffer",
 })
-vim.api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, {
-    callback = function()
-        if vim.w.auto_cursorline then
-            vim.wo.cursorline = true
-            vim.w.auto_cursorline = nil
-        end
-    end,
-})
-vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
-    callback = function()
-        if vim.wo.cursorline then
-            vim.w.auto_cursorline = true
-            vim.wo.cursorline = false
-        end
-    end,
-})
+
 vim.api.nvim_create_autocmd({ "VimResized" }, {
     callback = function()
         vim.cmd("tabdo wincmd =")
@@ -57,63 +41,7 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
 local lsp_settings = function(client, buf)
     vim.keymap.set("n", "<leader>ih", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
-    vim.keymap.set("n", "K", vim.lsp.buf.hover)
-    vim.keymap.set('x', 'an', function()
-        vim.lsp.buf.selection_range('outer')
-    end, { desc = "vim.lsp.buf.selection_range('outer')" })
 
-    vim.keymap.set('x', 'in', function()
-        vim.lsp.buf.selection_range('inner')
-    end, { desc = "vim.lsp.buf.selection_range('inner')" })
-
-    local methods = vim.lsp.protocol.Methods
-
-    if client:supports_method(methods.textDocument_documentHighlight) then
-        local under_cursor_highlights_group =
-            vim.api.nvim_create_augroup('CursorHighlights', { clear = false })
-        vim.api.nvim_create_autocmd({ 'CursorHold', 'InsertLeave' }, {
-            group = under_cursor_highlights_group,
-            desc = 'Highlight references under the cursor',
-            buffer = buf,
-            callback = vim.lsp.buf.document_highlight,
-        })
-        vim.api.nvim_create_autocmd({ 'CursorMoved', 'InsertEnter', 'BufLeave' }, {
-            group = under_cursor_highlights_group,
-            desc = 'Clear highlight references',
-            buffer = buf,
-            callback = vim.lsp.buf.clear_references,
-        })
-    end
-
-    if client:supports_method(methods.textDocument_inlayHint) and vim.g.inlay_hints then
-        local InlayHintsGroup = vim.api.nvim_create_augroup('ToggleInlayHints', { clear = false })
-        vim.defer_fn(function()
-            local mode = vim.api.nvim_get_mode().mode
-            vim.lsp.inlay_hint.enable(mode == 'n' or mode == 'v', { bufnr = buf })
-        end, 500)
-
-        vim.api.nvim_create_autocmd('InsertEnter', {
-            group = InlayHintsGroup,
-            desc = 'Enable inlay hints',
-            buffer = buf,
-            callback = function()
-                if vim.g.inlay_hints then
-                    vim.lsp.inlay_hint.enable(false, { buffnr = buf })
-                end
-            end,
-        })
-
-        vim.api.nvim_create_autocmd('InsertLeave', {
-            group = InlayHintsGroup,
-            desc = 'Disable inlay hints',
-            buffer = buf,
-            callback = function()
-                if vim.g.inlay_hints then
-                    vim.lsp.inlay_hint.enable(true, { bufnr = buf })
-                end
-            end,
-        })
-    end
 
     if client.server_capabilities.documentFormattingProvider then
         vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>')
@@ -155,19 +83,9 @@ local lsp_settings = function(client, buf)
     end
 end
 
-vim.api.nvim_create_autocmd('FileType', {
-    group = vim.api.nvim_create_augroup("UserFoldConfig", {}),
-    callback = function(args)
-        if not vim.w.lsp_folding_enabled then
-            local has_parser, _ = pcall(vim.treesitter.get_parser, args.buf)
-            if has_parser then
-                vim.wo.foldmethod = 'expr'
-                vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-            end
-        end
-    end,
-})
+
 vim.api.nvim_create_autocmd('LspDetach', { command = 'setl foldexpr<' })
+
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("UserLspConfig", {}),
     callback = function(args)
@@ -176,13 +94,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
             return
         end
         lsp_settings(client, args.buf)
-    end,
-})
-
-vim.api.nvim_create_autocmd('FileType', {
-    pattern = { 'qf', 'snacks_dashboard' },
-    callback = function()
-        vim.keymap.set('n', 'q', '<cmd>bd<cr>', { silent = true, buffer = true })
     end,
 })
 
