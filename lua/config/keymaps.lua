@@ -1,3 +1,11 @@
+vim.api.nvim_del_keymap('n', 'gra')
+vim.api.nvim_del_keymap('n', 'gri')
+vim.api.nvim_del_keymap('n', 'grn')
+vim.api.nvim_del_keymap('n', 'grr')
+vim.api.nvim_del_keymap('n', 'grt')
+vim.api.nvim_del_keymap('n', 'grx')
+vim.api.nvim_del_keymap('v', 'gra')
+
 vim.keymap.set("n", "<leader>q", ":q!<cr>")
 vim.keymap.set("n", "<space><space>", "%")
 vim.keymap.set('n', 'H', ':bprev<CR>', { desc = 'Prev buffer', noremap = false })

@@ -1,6 +1,5 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ';'
-vim.cmd('mapclear')
 vim.loader.enable()
 require("config.keymaps")
 require("config.plugin")
