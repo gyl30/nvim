@@ -28,7 +28,7 @@ vim.opt.foldmethod = 'expr'
 vim.opt.virtualedit = 'onemore'
 
 vim.opt.undofile = true
-vim.opt.completeopt = "menu,menuone,noselect"
+vim.opt.completeopt = 'menu,menuone,noselect'
 
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0

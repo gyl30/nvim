@@ -13,11 +13,10 @@ endfunction
 command! BufOnly silent! execute "%bd|e#|bd#"
 ]]
 
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "*" },
+vim.api.nvim_create_autocmd({ 'FileType' }, {
+    pattern = { '*' },
     callback = function()
-        vim.opt_local.fo:remove("o")
-        vim.opt_local.fo:remove("r")
+        vim.opt_local.formatoptions:remove({ 'c', 'r', 'o' })
     end,
 })
 
@@ -41,43 +40,34 @@ vim.api.nvim_create_autocmd('BufReadPost', {
     end,
 })
 
-vim.api.nvim_create_autocmd({ "VimResized" }, {
+vim.api.nvim_create_autocmd({ 'VimResized' }, {
     callback = function()
-        vim.cmd("tabdo wincmd =")
+        vim.cmd('tabdo wincmd =')
     end,
 })
-
------------------------------------------- LSP KEYMAP ----------------------------------------------
-local lsp_settings = function(client, buf)
-    vim.keymap.set("n", "<leader>ih", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
-    vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
-    vim.keymap.set('n', '<leader>lr', function() vim.cmd.lsp('restart') end, { buffer = buf })
-    if client.server_capabilities.documentFormattingProvider then
-        vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>')
-    end
-end
-
-
-vim.api.nvim_create_autocmd('LspDetach', { command = 'setl foldexpr<' })
-
-vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-    callback = function(args)
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-        if not client then
+vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
+    pattern = '*',
+    group = vim.api.nvim_create_augroup('AutoCreateDir', {}),
+    callback = function(ctx)
+        if vim.bo.ft == 'oil' then
             return
         end
-        lsp_settings(client, args.buf)
+        local dir = vim.fn.fnamemodify(ctx.file, ':p:h')
+        local res = vim.fn.isdirectory(dir)
+        if res == 0 then
+            vim.fn.mkdir(dir, 'p')
+        end
     end,
 })
 
-vim.api.nvim_create_autocmd("User", {
-    pattern = "BDeletePre *",
+
+vim.api.nvim_create_autocmd('User', {
+    pattern = 'BDeletePre *',
     callback = function()
         local bufnr = vim.api.nvim_get_current_buf()
         local name = vim.api.nvim_buf_get_name(bufnr)
-        if name == "" then
-            vim.cmd "quit"
+        if name == '' then
+            vim.cmd 'quit'
         end
     end,
 })

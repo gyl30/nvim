@@ -1,65 +1,15 @@
-local progress_status = {
-    client = nil,
-    kind = nil,
-    title = nil,
-}
-
-vim.api.nvim_create_autocmd('LspProgress', {
-    group = vim.api.nvim_create_augroup('LspStatusline', { clear = true }),
-    desc = 'Update LSP progress in statusline',
-    pattern = { 'begin', 'end' },
-    callback = function(args)
-        if not args.data then
-            return
-        end
-
-        progress_status = {
-            client = vim.lsp.get_client_by_id(args.data.client_id).name,
-            kind = args.data.params.value.kind,
-            title = args.data.params.value.title,
-        }
-
-        if progress_status.kind == 'end' then
-            progress_status.title = nil
-            vim.defer_fn(function() vim.cmd.redrawstatus() end, 3000)
-        else
-            vim.cmd.redrawstatus()
-        end
-    end,
-})
-
-local function lsp_progress_component()
-    if not progress_status.client or not progress_status.title then
-        return nil
-    end
-
-    if vim.startswith(vim.api.nvim_get_mode().mode, 'i') then
-        return nil
-    end
-
-    return table.concat {
-        '%#StatuslineSpinner#󱥸 ',
-        string.format('%%#StatuslineTitle#%s  ', progress_status.client),
-        string.format('%%#StatuslineItalic#%s...', progress_status.title),
-    }
-end
-
 local function lsp_status()
-    local attached_clients = vim.lsp.get_clients({ bufnr = 0 })
-    if #attached_clients == 0 then
-        return "No Active Lsp"
+    local clients = vim.lsp.get_clients({ bufnr = vim.api.nvim_get_current_buf() })
+    if next(clients) == nil then
+        return '%#StlComponentInactive#[LS Inactive]%*'
     end
-    local it = vim.iter(attached_clients)
-    it:map(function(client)
-        local name = client.name:gsub("language.server", "ls")
-        return name
-    end)
-    local names = it:totable()
-    local clinet_name = ""
-    for _, name in pairs(names) do
-        clinet_name = clinet_name .. ' ' .. string.lower(name)
+    local client_names = {}
+    for _, client in ipairs(clients) do
+        if client and client.name ~= '' then
+            table.insert(client_names, string.format('%%#StlComponentOn#%s%%*', client.name))
+        end
     end
-    return clinet_name
+    return string.format(' %s', table.concat(client_names, ', '))
 end
 local function file_format()
     local symbols = {
@@ -69,6 +19,42 @@ local function file_format()
     }
     local os = vim.bo.fileformat
     return symbols[os] or ''
+end
+local function search()
+    if vim.v.hlsearch == 0 then
+        return ''
+    end
+    local ok, s_count = pcall(vim.fn.searchcount, { recompute = true })
+    if not ok or s_count.current == nil or s_count.total == 0 then
+        return ''
+    end
+    if s_count.incomplete == 1 then
+        return string.format('%%#StlIcon#%s [?/?]%%*', '')
+    end
+    local too_many = string.format('>%d', s_count.maxcount)
+    local current = s_count.current > s_count.maxcount and too_many or s_count.current
+    local total = s_count.total > s_count.maxcount and too_many or s_count.total
+    return string.format('%%#StlIcon#%s [%s/%s]%%*', '', current, total)
+end
+
+local diagnostic_levels = { 'ERROR', 'WARN', 'INFO', 'HINT' }
+local diagnostic_icons = { ERROR = '', WARN = '', INFO = '', HINT = '', }
+
+local function diagnostic()
+    local counts = vim.diagnostic.count(0)
+    local res = {}
+    for _, level in ipairs(diagnostic_levels) do
+        local n = counts[vim.diagnostic.severity[level]] or 0
+        if n > 0 then
+            local icon = diagnostic_icons[level]
+            if vim.diagnostic.is_enabled() then
+                table.insert(res, string.format('%%#StlDiagnostic%s#%s %s%%*', level, icon, n))
+            else
+                table.insert(res, string.format('%%#StlComponentInactive#%s %s%%*', icon, n))
+            end
+        end
+    end
+    return table.concat(res, ' ')
 end
 local function progress()
     local cur = vim.fn.line('.')
@@ -154,9 +140,11 @@ function _G.statusline()
         status_mode(),
         "%f",
         "%=",
+        search(),
+        diagnostic(),
         file_format(),
         encoding(),
-        lsp_progress_component() or lsp_status(),
+        lsp_status(),
         progress(),
         location(),
         date()

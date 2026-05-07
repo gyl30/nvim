@@ -1,9 +1,61 @@
 vim.lsp.log.set_level('off')
-vim.diagnostic.config({ virtual_text = false })
+
+local function format(d)
+    return string.format('%s: %s', d.source and d.source or 'Unknown', d.message)
+end
+
+local function suffix(d)
+    return string.format(' [%s]', d.code and d.code or 'Unknown')
+end
+
+local virtual_text_opts = {
+    source = false,
+    prefix = '●',
+    spacing = 4,
+    format = format,
+    suffix = suffix,
+}
+
+local float_opts = {
+    source = false,
+    border = vim.g.border_style,
+    severity_sort = true,
+    format = format,
+    suffix = suffix,
+}
+
+local virtual_lines_opts = {
+    format = function(d)
+        return string.format(
+            '%s: %s [%s]',
+            d.source and d.source or 'Unknown',
+            d.message,
+            d.code and d.code or 'Unknown'
+        )
+    end,
+}
+
+vim.diagnostic.config({
+    float = float_opts,
+    virtual_text = virtual_text_opts,
+    virtual_lines = false,
+    signs = false,
+    severity_sort = true,
+})
+
+vim.keymap.set('n', 'gK', function()
+    local old_opts = vim.diagnostic.config()
+    if not old_opts then
+        return
+    end
+    local new_opts = {}
+    new_opts.virtual_text = not old_opts.virtual_text and virtual_text_opts or false
+    new_opts.virtual_lines = not old_opts.virtual_lines and virtual_lines_opts or false
+    vim.diagnostic.config(new_opts)
+end)
 
 vim.api.nvim_create_autocmd('ColorScheme', {
     callback = function()
-        ---- Link LSP semantic highlight groups to TreeSitter token groups
         for lsp, link in pairs({
             ['@lsp.type.class'] = '@type',
             ['@lsp.type.decorator'] = '@function.macro',
@@ -114,7 +166,7 @@ vim.api.nvim_create_autocmd('ColorScheme', {
         }) do
             vim.api.nvim_set_hl(0, k, v)
         end
-        vim.api.nvim_set_hl(0, "LspInlayHint", { fg = "#9DA9A0" })
+        vim.api.nvim_set_hl(0, 'LspInlayHint', { fg = '#9DA9A0' })
         vim.api.nvim_set_hl(0, '@lsp.mod.defaultLibrary', { italic = true, default = true })
         vim.api.nvim_set_hl(0, '@lsp.mod.deprecated', { strikethrough = true, default = true })
         vim.api.nvim_set_hl(0, '@lsp.mod.mutable.cpp', { italic = true, default = true })
@@ -139,6 +191,13 @@ vim.api.nvim_create_autocmd('ColorScheme', {
     end,
 })
 local on_attach = function(client, bufnr)
+    vim.keymap.set('n', '<leader>ih', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename)
+    vim.keymap.set('n', '<leader>lr', function() vim.cmd.lsp('restart') end, { buffer = bufnr })
+    if client.server_capabilities.documentFormattingProvider then
+        vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>')
+    end
+
     vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
     if client and client:supports_method('textDocument/foldingRange', bufnr) then
         vim.o.foldmethod = 'expr'
@@ -146,7 +205,7 @@ local on_attach = function(client, bufnr)
         vim.o.foldtext = 'v:lua.vim.lsp.foldtext()'
     end
     if client:supports_method 'textDocument/signatureHelp' then
-        vim.keymap.set("i", '<C-k>', function()
+        vim.keymap.set('i', '<C-k>', function()
             if require('blink.cmp.completion.windows.menu').win:is_open() then
                 require('blink.cmp').hide()
             end
@@ -154,6 +213,7 @@ local on_attach = function(client, bufnr)
             vim.lsp.buf.signature_help()
         end)
     end
+    require('lsp.progress')
     if client:supports_method 'textDocument/documentHighlight' then
         local under_cursor_highlights_group =
             vim.api.nvim_create_augroup('LspCursorHighlights', { clear = false })
@@ -168,37 +228,19 @@ local on_attach = function(client, bufnr)
             callback = vim.lsp.buf.clear_references,
         })
     end
-    if client:supports_method 'textDocument/inlayHint' then
-        local inlay_hints_group = vim.api.nvim_create_augroup('LspToggleInlayHints', { clear = false })
-        vim.api.nvim_create_autocmd('InsertEnter', {
-            group = inlay_hints_group,
-            buffer = bufnr,
-            callback = function()
-                vim.lsp.inlay_hint.enable(false, { bufnr = bufnr })
-            end,
-        })
-
-        vim.api.nvim_create_autocmd('InsertLeave', {
-            group = inlay_hints_group,
-            buffer = bufnr,
-            callback = function()
-                vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-            end,
-        })
-    end
 
     if client.server_capabilities.semanticTokensProvider then
         vim.treesitter.stop(bufnr)
     end
     if client.server_capabilities.documentHighlightProvider then
-        vim.api.nvim_create_autocmd("CursorMoved", {
+        vim.api.nvim_create_autocmd('CursorMoved', {
             callback = vim.lsp.buf.clear_references,
             buffer = bufnr,
         })
     end
     if client.name == 'gopls' then
-        vim.api.nvim_create_autocmd("BufWritePre", {
-            group = vim.api.nvim_create_augroup("GoplsSourceOrganizeImports", {}),
+        vim.api.nvim_create_autocmd('BufWritePre', {
+            group = vim.api.nvim_create_augroup('GoplsSourceOrganizeImports', {}),
             callback = function()
                 local params = {
                     textDocument = vim.lsp.util.make_text_document_params(0),
@@ -208,16 +250,16 @@ local on_attach = function(client, bufnr)
                         diagnostics = {},
                     },
                 }
-                local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 5000)
+                local result = vim.lsp.buf_request_sync(0, 'textDocument/codeAction', params, 5000)
                 for _, res in pairs(result or {}) do
                     for _, r in pairs(res.result or {}) do
                         if next(r.edit) then
-                            vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
+                            vim.lsp.util.apply_workspace_edit(r.edit, 'utf-8')
                         elseif next(r.command) then
                             client:exec_cmd({
-                                title = "Organize Imports",
+                                title = 'Organize Imports',
                                 command = r.command,
-                                arguments = { vim.api.nvim_buf_get_name(buf) },
+                                arguments = { vim.api.nvim_buf_get_name(bufnr) },
                             })
                         end
                     end
@@ -246,10 +288,12 @@ vim.lsp.buf.signature_help = function()
         max_width = math.floor(vim.o.columns * 0.4),
     }
 end
-vim.lsp.config("*", {
+
+vim.lsp.config('*', {
     on_attach = on_attach,
-    root_markers = { ".git", },
+    root_markers = { '.git', },
 })
+
 local lsp_configs = {}
 for _, v in ipairs(vim.api.nvim_get_runtime_file('lsp/*', true)) do
     local name = vim.fn.fnamemodify(v, ':t:r')
@@ -257,3 +301,5 @@ for _, v in ipairs(vim.api.nvim_get_runtime_file('lsp/*', true)) do
 end
 
 vim.lsp.enable(vim.tbl_keys(lsp_configs))
+
+vim.api.nvim_create_autocmd('LspDetach', { command = 'setl foldexpr<' })
