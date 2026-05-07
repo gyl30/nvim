@@ -42,6 +42,7 @@ local function smart_del(key)
     end
 end
 
+vim.keymap.set('n', 'gQ', 'mzgggqG`z<cmd>delmarks z<cr>zz')
 vim.keymap.set('n', 'j', function() return smart_jk('j') end, { expr = true })
 vim.keymap.set('n', 'k', function() return smart_jk('k') end, { expr = true })
 vim.keymap.set('n', 'dd', function() return smart_del('d') end, { expr = true })
@@ -53,3 +54,5 @@ vim.keymap.set('n', 'i', function()
         return 'i'
     end
 end, { expr = true })
+
+vim.keymap.set({ 's', 'i', 'n', 'v' }, '<C-s>', '<esc>:w<cr>')

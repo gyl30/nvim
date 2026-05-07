@@ -1,3 +1,49 @@
+local progress_status = {
+    client = nil,
+    kind = nil,
+    title = nil,
+}
+
+vim.api.nvim_create_autocmd('LspProgress', {
+    group = vim.api.nvim_create_augroup('LspStatusline', { clear = true }),
+    desc = 'Update LSP progress in statusline',
+    pattern = { 'begin', 'end' },
+    callback = function(args)
+        if not args.data then
+            return
+        end
+
+        progress_status = {
+            client = vim.lsp.get_client_by_id(args.data.client_id).name,
+            kind = args.data.params.value.kind,
+            title = args.data.params.value.title,
+        }
+
+        if progress_status.kind == 'end' then
+            progress_status.title = nil
+            vim.defer_fn(function() vim.cmd.redrawstatus() end, 3000)
+        else
+            vim.cmd.redrawstatus()
+        end
+    end,
+})
+
+local function lsp_progress_component()
+    if not progress_status.client or not progress_status.title then
+        return nil
+    end
+
+    if vim.startswith(vim.api.nvim_get_mode().mode, 'i') then
+        return nil
+    end
+
+    return table.concat {
+        '%#StatuslineSpinner#󱥸 ',
+        string.format('%%#StatuslineTitle#%s  ', progress_status.client),
+        string.format('%%#StatuslineItalic#%s...', progress_status.title),
+    }
+end
+
 local function lsp_status()
     local attached_clients = vim.lsp.get_clients({ bufnr = 0 })
     if #attached_clients == 0 then
@@ -110,7 +156,7 @@ function _G.statusline()
         "%=",
         file_format(),
         encoding(),
-        lsp_status(),
+        lsp_progress_component() or lsp_status(),
         progress(),
         location(),
         date()

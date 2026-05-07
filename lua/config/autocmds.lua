@@ -21,12 +21,22 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     end,
 })
 
-vim.api.nvim_create_autocmd("BufReadPost", {
-    callback = function()
-        local mark = vim.api.nvim_buf_get_mark(0, '"')
-        local lcount = vim.api.nvim_buf_line_count(0)
-        if mark[1] > 0 and mark[1] <= lcount then
-            pcall(vim.api.nvim_win_set_cursor, 0, mark)
+vim.api.nvim_create_autocmd('FileType', {
+    group = vim.api.nvim_create_augroup('BigFile', { clear = true }),
+    callback = function(args)
+        vim.schedule(function()
+            vim.bo[args.buf].syntax = vim.filetype.match { buf = args.buf } or ''
+        end)
+    end,
+})
+
+vim.api.nvim_create_autocmd('BufReadPost', {
+    group = vim.api.nvim_create_augroup('LastLocation', { clear = true }),
+    callback = function(args)
+        local mark = vim.api.nvim_buf_get_mark(args.buf, '"')
+        local line_count = vim.api.nvim_buf_line_count(args.buf)
+        if mark[1] > 0 and mark[1] <= line_count then
+            vim.cmd 'normal! g`"zz'
         end
     end,
 })
@@ -41,45 +51,9 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
 local lsp_settings = function(client, buf)
     vim.keymap.set("n", "<leader>ih", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
-
-
+    vim.keymap.set('n', '<leader>lr', function() vim.cmd.lsp('restart') end, { buffer = buf })
     if client.server_capabilities.documentFormattingProvider then
         vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>')
-    end
-    if client and client:supports_method('textDocument/foldingRange') then
-        local win = vim.api.nvim_get_current_win()
-        vim.wo[win][0].foldmethod = 'expr'
-        vim.wo[win][0].foldexpr = 'v:lua.vim.lsp.foldexpr()'
-    end
-
-    if client.name == 'gopls' then
-        vim.api.nvim_create_autocmd("BufWritePre", {
-            group = vim.api.nvim_create_augroup("GoplsSourceOrganizeImports", {}),
-            callback = function()
-                local params = {
-                    textDocument = vim.lsp.util.make_text_document_params(0),
-                    range = vim.lsp.util.make_range_params(0, 'utf-8').range,
-                    context = {
-                        only = { 'source.organizeImports' },
-                        diagnostics = {},
-                    },
-                }
-                local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 5000)
-                for _, res in pairs(result or {}) do
-                    for _, r in pairs(res.result or {}) do
-                        if next(r.edit) then
-                            vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
-                        elseif next(r.command) then
-                            client:exec_cmd({
-                                title = "Organize Imports",
-                                command = r.command,
-                                arguments = { vim.api.nvim_buf_get_name(buf) },
-                            })
-                        end
-                    end
-                end
-            end,
-        })
     end
 end
 

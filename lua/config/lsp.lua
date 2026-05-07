@@ -140,18 +140,53 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 })
 local on_attach = function(client, bufnr)
     vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
-    if client:supports_method('textDocument/documentHighlight') then
-        vim.api.nvim_create_autocmd('CursorHold', {
+    if client and client:supports_method('textDocument/foldingRange', bufnr) then
+        vim.o.foldmethod = 'expr'
+        vim.o.foldexpr = 'v:lua.vim.lsp.foldexpr()'
+        vim.o.foldtext = 'v:lua.vim.lsp.foldtext()'
+    end
+    if client:supports_method 'textDocument/signatureHelp' then
+        vim.keymap.set("i", '<C-k>', function()
+            if require('blink.cmp.completion.windows.menu').win:is_open() then
+                require('blink.cmp').hide()
+            end
+
+            vim.lsp.buf.signature_help()
+        end)
+    end
+    if client:supports_method 'textDocument/documentHighlight' then
+        local under_cursor_highlights_group =
+            vim.api.nvim_create_augroup('LspCursorHighlights', { clear = false })
+        vim.api.nvim_create_autocmd({ 'CursorHold', 'InsertLeave' }, {
+            group = under_cursor_highlights_group,
+            buffer = bufnr,
             callback = vim.lsp.buf.document_highlight,
-            buffer = bufnr,
-            desc = 'Document Highlight',
         })
-        vim.api.nvim_create_autocmd('CursorMoved', {
-            callback = vim.lsp.buf.clear_references,
+        vim.api.nvim_create_autocmd({ 'CursorMoved', 'InsertEnter', 'BufLeave' }, {
+            group = under_cursor_highlights_group,
             buffer = bufnr,
-            desc = 'Clear All the References',
+            callback = vim.lsp.buf.clear_references,
         })
     end
+    if client:supports_method 'textDocument/inlayHint' then
+        local inlay_hints_group = vim.api.nvim_create_augroup('LspToggleInlayHints', { clear = false })
+        vim.api.nvim_create_autocmd('InsertEnter', {
+            group = inlay_hints_group,
+            buffer = bufnr,
+            callback = function()
+                vim.lsp.inlay_hint.enable(false, { bufnr = bufnr })
+            end,
+        })
+
+        vim.api.nvim_create_autocmd('InsertLeave', {
+            group = inlay_hints_group,
+            buffer = bufnr,
+            callback = function()
+                vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+            end,
+        })
+    end
+
     if client.server_capabilities.semanticTokensProvider then
         vim.treesitter.stop(bufnr)
     end
@@ -161,10 +196,56 @@ local on_attach = function(client, bufnr)
             buffer = bufnr,
         })
     end
+    if client.name == 'gopls' then
+        vim.api.nvim_create_autocmd("BufWritePre", {
+            group = vim.api.nvim_create_augroup("GoplsSourceOrganizeImports", {}),
+            callback = function()
+                local params = {
+                    textDocument = vim.lsp.util.make_text_document_params(0),
+                    range = vim.lsp.util.make_range_params(0, 'utf-8').range,
+                    context = {
+                        only = { 'source.organizeImports' },
+                        diagnostics = {},
+                    },
+                }
+                local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 5000)
+                for _, res in pairs(result or {}) do
+                    for _, r in pairs(res.result or {}) do
+                        if next(r.edit) then
+                            vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
+                        elseif next(r.command) then
+                            client:exec_cmd({
+                                title = "Organize Imports",
+                                command = r.command,
+                                arguments = { vim.api.nvim_buf_get_name(buf) },
+                            })
+                        end
+                    end
+                end
+            end,
+        })
+    end
 end
 
 
 
+local hover = vim.lsp.buf.hover
+---@diagnostic disable-next-line: duplicate-set-field
+vim.lsp.buf.hover = function()
+    return hover {
+        max_height = math.floor(vim.o.lines * 0.5),
+        max_width = math.floor(vim.o.columns * 0.4),
+    }
+end
+
+local signature_help = vim.lsp.buf.signature_help
+---@diagnostic disable-next-line: duplicate-set-field
+vim.lsp.buf.signature_help = function()
+    return signature_help {
+        max_height = math.floor(vim.o.lines * 0.5),
+        max_width = math.floor(vim.o.columns * 0.4),
+    }
+end
 vim.lsp.config("*", {
     on_attach = on_attach,
     root_markers = { ".git", },
