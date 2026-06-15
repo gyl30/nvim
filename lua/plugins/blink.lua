@@ -14,6 +14,9 @@ return {
             end
         },
         {
+            "fang2hou/blink-copilot",
+        },
+        {
             "onsails/lspkind.nvim",
             opts = {
                 symbol_map = {
@@ -68,7 +71,7 @@ return {
             }
         },
         sources = {
-            default = { "lsp", "path", "snippets", "buffer", "emoji", "codeium" },
+            default = { "lsp", "path", "snippets", "buffer", "emoji", "codeium", "copilot", },
             providers = {
                 lsp = {
                     fallbacks = {},
@@ -85,6 +88,22 @@ return {
                             vim.o.filetype
                         )
                     end,
+                },
+                copilot = {
+                    name = "copilot",
+                    module = "blink-copilot",
+                    async = true,
+                    score_offset = 100,
+
+                    opts = {
+                        max_completions = 3,
+                        max_attempts = 4,
+                        debounce = 300,
+                        auto_refresh = {
+                            backward = false,
+                            forward = true,
+                        },
+                    },
                 },
             },
         },

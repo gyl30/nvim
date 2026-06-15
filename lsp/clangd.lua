@@ -9,13 +9,6 @@ return {
     },
     filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda', 'proto' },
     single_file_support = true,
-    capabilities = {
-        textDocument = {
-            completion = {
-                editsNearCursor = true,
-            },
-        },
-    },
     settings = {
         clangd = {
             init_options = {
@@ -26,6 +19,15 @@ return {
             },
         }
     },
+    init_options = {
+        usePlaceholders = true,
+        completeUnimported = true,
+        clangdFileStatus = true,
+        fallbackFlags = {
+            "--std=c++20",
+        },
+    },
+
     cmd = {
         "clangd",
         "-j=8",
