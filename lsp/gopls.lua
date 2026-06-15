@@ -10,6 +10,8 @@ return {
         gopls = {
             analyses = {
                 unusedparams = true,
+                unusedwrite = true,
+                nilness = true,
             },
             staticcheck = true,
             semanticTokens = true,

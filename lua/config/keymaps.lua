@@ -56,3 +56,41 @@ vim.keymap.set('n', 'i', function()
 end, { expr = true })
 
 vim.keymap.set({ 's', 'i', 'n', 'v' }, '<C-s>', '<esc>:w<cr>')
+
+-- bufferline
+for i = 1, 9 do
+    vim.keymap.set("n", "<leader>" .. i, function()
+        require("config.bufferline").goto_buffer(i)
+    end, {
+        silent = true,
+        desc = "Go to buffer " .. i,
+    })
+end
+
+vim.keymap.set("n", "<Tab>", function()
+    require("config.bufferline").next_buffer()
+end, {
+    silent = true,
+    desc = "Next buffer",
+})
+
+vim.keymap.set("n", "<S-Tab>", function()
+    require("config.bufferline").prev_buffer()
+end, {
+    silent = true,
+    desc = "Previous buffer",
+})
+
+vim.keymap.set("n", "<leader>bd", function()
+    require("config.bufferline").delete_current_buffer(false)
+end, {
+    silent = true,
+    desc = "Delete current buffer",
+})
+
+vim.keymap.set("n", "<leader>bD", function()
+    require("config.bufferline").delete_current_buffer(true)
+end, {
+    silent = true,
+    desc = "Force delete current buffer",
+})

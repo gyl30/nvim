@@ -1,13 +1,14 @@
 return {
     "f-person/git-blame.nvim",
     keys = {
-        '<C-g>', mode = { 'n' }, silent = true, '<cmd>GitBlameToggle<cr>',
-    },
-    config = function()
-        require('gitblame').setup {
-            enabled = false,
-            display_virtual_text = false,
+        {
+            '<C-g>', mode = { 'n' }, silent = true, '<cmd>GitBlameToggle<cr>',
         }
-        vim.g.gitblame_display_virtual_text = 0
-    end
+    },
+    opts = {
+        enabled = false,
+        message_template = " <summary> • <date> • <author> • <<sha>>",
+        date_format = "%Y-%m-%d %H:%M:%S",
+        virtual_text_column = 1,
+    },
 }

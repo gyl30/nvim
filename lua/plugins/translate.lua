@@ -1,11 +1,16 @@
 return {
     "gyl30/translate",
     config = function()
-        vim.cmd [[
-            vmap <silent> <leader>t <Cmd>lua require("translate").translateV()<cr>
-            nmap <silent> <leader>t <Cmd>lua require("translate").translateN()<cr>
-            command! Translate  lua require("translate").translateN()
-            command! TranslateV lua require("translate").translateV()
-        ]]
-    end
+        require("translate").setup({
+            target = "zh",
+        })
+
+        vim.keymap.set("n", "<leader>t", function()
+            require("translate").translateN()
+        end, { desc = "Translate word under cursor" })
+
+        vim.keymap.set("x", "<leader>t", function()
+            require("translate").translateV()
+        end, { desc = "Translate visual selection" })
+    end,
 }

@@ -60,14 +60,23 @@ vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
     end,
 })
 
+vim.api.nvim_create_user_command("Bdelete", function(opts)
+    require("config.bufferline").delete_current_buffer(opts.bang)
+end, {
+    bang = true,
+    desc = "Delete current buffer without closing window",
+})
 
-vim.api.nvim_create_autocmd('User', {
-    pattern = 'BDeletePre *',
+vim.api.nvim_create_user_command("Bwipeout", function(opts)
+    require("config.bufferline").wipeout_current_buffer(opts.bang)
+end, {
+    bang = true,
+    desc = "Wipeout current buffer without closing window",
+})
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+    group = vim.api.nvim_create_augroup("BufferLineHighlight", { clear = true }),
     callback = function()
-        local bufnr = vim.api.nvim_get_current_buf()
-        local name = vim.api.nvim_buf_get_name(bufnr)
-        if name == '' then
-            vim.cmd 'quit'
-        end
+        require("config.bufferline").setup_highlight()
     end,
 })
