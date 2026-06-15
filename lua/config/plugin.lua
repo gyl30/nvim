@@ -34,6 +34,7 @@ require("lazy").setup({
             reset = false,
             disabled_plugins = {
                 "gzip",
+                "spellfile",
                 "tarPlugin",
                 "tohtml",
                 "tutor",
