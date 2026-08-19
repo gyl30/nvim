@@ -126,7 +126,7 @@ function M.draw()
 
     add("MRU", "header")
     add("", "empty")
-    for _, f in ipairs(section1) do add("  " .. shorten_path(f), "file", f) end
+    for _, f in ipairs(section1) do add("" .. shorten_path(f), "file", f) end
     add("", "empty")
     add("", "empty")
     add("MRU " .. vim.fn.fnamemodify(current_cwd, ":~"), "header")
@@ -134,7 +134,8 @@ function M.draw()
     if #section2 == 0 then
         add("", "empty")
     else
-        for _, f in ipairs(section2) do add("  " .. shorten_path(f), "file", f) end
+        -- for _, f in ipairs(section2) do add("  " .. shorten_path(f), "file", f) end
+        for _, f in ipairs(section2) do add("" .. shorten_path(f), "file", f) end
     end
 
     local stats = get_lazy_stats_info()
