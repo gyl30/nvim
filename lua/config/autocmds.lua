@@ -2,17 +2,29 @@ vim.cmd [[
 " 根据搜索结果折叠
 nnoremap zpr :setlocal foldexpr=(getline(v:lnum)=~@/)?0:(getline(v:lnum-1)=~@/)\\|\\|(getline(v:lnum+1)=~@/)?1:2 foldmethod=expr foldlevel=0 foldcolumn=2<CR>:set foldmethod=manual<CR><CR>
 vnoremap // y/<c-r>"<CR>   "
-function! ToUTF8()
-    e ++ff=dos
-    set fileencoding=utf-8
-    set fileformat=unix
-    w
-endfunction
-" autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp,*.go :silent! call ToUTF8()
-" autocmd BufWritePre *.cpp,*.lua,*.c,*.h,*.hpp :%retab
 command! BufOnly silent! execute "%bd|e#|bd#"
 ]]
 
+vim.opt.fileencodings = {
+    "ucs-bom",
+    "utf-8",
+    "gb18030",
+    "gbk",
+    "cp936",
+    "latin1",
+}
+
+vim.opt.fileformats = {
+    "unix",
+    "dos",
+    "mac",
+}
+
+vim.api.nvim_create_user_command("ToUTF8", function()
+    vim.bo.fileencoding = "utf-8"
+    vim.bo.fileformat = "unix"
+    vim.cmd.write()
+end, {})
 vim.api.nvim_create_autocmd({ 'FileType' }, {
     pattern = { '*' },
     callback = function()
