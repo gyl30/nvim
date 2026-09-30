@@ -1,32 +1,6 @@
 require('lsp.progress')
 vim.lsp.log.set_level('off')
 
-local function gopls_organize_imports(client, bufnr)
-    local encoding = client.offset_encoding or 'utf-8'
-
-    local params = vim.lsp.util.make_range_params(bufnr, encoding)
-    params.context = {
-        only = { 'source.organizeImports' },
-        diagnostics = {},
-    }
-
-    local result = vim.lsp.buf_request_sync(
-        bufnr,
-        'textDocument/codeAction',
-        params,
-        3000
-    )
-
-    for cid, res in pairs(result or {}) do
-        for _, action in pairs(res.result or {}) do
-            if action.edit then
-                local c = vim.lsp.get_client_by_id(cid)
-                local enc = c and c.offset_encoding or encoding
-                vim.lsp.util.apply_workspace_edit(action.edit, enc)
-            end
-        end
-    end
-end
 local function lsp_token_hi()
     for group, highlight in pairs({
         LspInlayHint = {
@@ -144,7 +118,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
                 bufnr
             ) then
             local group = vim.api.nvim_create_augroup(
-                'LspCursorHighlights_' .. bufnr,
+                'lsp_cursor_highlights_' .. bufnr,
                 { clear = true }
             )
 
