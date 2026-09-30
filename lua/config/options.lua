@@ -5,7 +5,6 @@ vim.opt.cursorline = true
 vim.opt.ttimeoutlen = 0
 vim.opt.laststatus = 3
 vim.opt.cmdheight = 0
-vim.opt.showtabline = 0
 vim.opt.showmode = false
 vim.opt.autochdir = true
 vim.opt.tabstop = 4
@@ -20,15 +19,13 @@ vim.opt.autowrite = true
 vim.opt.updatecount = 100
 vim.opt.updatetime = 300
 vim.opt.signcolumn = "no"
-vim.opt.foldcolumn = '0'
 vim.opt.foldlevel = 99
 vim.opt.foldlevelstart = 99
-vim.opt.foldenable = true
-vim.opt.foldmethod = 'expr'
 vim.opt.virtualedit = 'onemore'
 
 vim.opt.undofile = true
 vim.opt.completeopt = 'menu,menuone,noselect'
+vim.opt.jumpoptions:append('stack')
 
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0

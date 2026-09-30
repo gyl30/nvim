@@ -24,11 +24,9 @@ vim.keymap.set('i', '<C-j>', '<Down>', { desc = 'Move down' })
 vim.keymap.set('i', '<C-k>', '<Up>', { desc = 'Move up' })
 local function smart_jk(jk)
     if vim.v.count ~= 0 then
-        if vim.v.count > 5 then
-            return "m'" .. vim.v.count .. jk
-        end
         return jk
     end
+
     return 'g' .. jk
 end
 
