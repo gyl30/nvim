@@ -1,11 +1,19 @@
 return {
-    root_markers = { 'go.work', 'go.mod', '.git' },
-    cmd = { "gopls", "serve" },
-    filetypes = { "go", "gomod" },
-    init_options = {
-        usePlaceholders = true,
-        completeUnimported = true,
+    cmd = { 'gopls' },
+
+    filetypes = {
+        'go',
+        'gomod',
+        'gowork',
+        'gotmpl',
     },
+
+    root_markers = {
+        'go.work',
+        'go.mod',
+        '.git',
+    },
+
     settings = {
         gopls = {
             analyses = {
@@ -13,30 +21,22 @@ return {
                 unusedwrite = true,
                 nilness = true,
             },
+
             staticcheck = true,
             semanticTokens = true,
             usePlaceholders = true,
-            completeUnimported = true,
             gofumpt = true,
-            directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
-            codelenses = {
-                gc_details = false,
-                generate = true,
-                regenerate_cgo = true,
-                run_govulncheck = true,
-                test = true,
-                tidy = true,
-                upgrade_dependency = true,
-                vendor = true,
+
+            directoryFilters = {
+                '-.git',
+                '-.vscode',
+                '-.idea',
+                '-.vscode-test',
+                '-node_modules',
             },
-            hints = {
-                assignVariableTypes = false,
-                compositeLiteralFields = false,
-                compositeLiteralTypes = false,
-                constantValues = false,
-                functionTypeParameters = false,
-                parameterNames = false,
-                rangeVariableTypes = false,
+
+            codelenses = {
+                test = true,
             },
         },
     },
