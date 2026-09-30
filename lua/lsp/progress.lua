@@ -245,11 +245,21 @@ vim.api.nvim_create_autocmd('LspDetach', {
     group = group,
 
     callback = function(event)
-        local client_id = event.data.client_id
+        local client =
+            vim.lsp.get_client_by_id(event.data.client_id)
+
+        if not client then
+            return
+        end
+
+        if vim.tbl_count(client.attached_buffers) > 1 then
+            return
+        end
+
         local changed = false
 
         for key, item in pairs(items) do
-            if item.client_id == client_id then
+            if item.client_id == client.id then
                 items[key] = nil
                 changed = true
             end
