@@ -162,7 +162,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
         end
         if client.name == 'gopls' then
             local group = vim.api.nvim_create_augroup(
-                'GoplsSave_' .. bufnr,
+                'gopls_save_' .. bufnr,
                 { clear = true }
             )
 
@@ -250,10 +250,32 @@ vim.lsp.config('*', {
     root_markers = { '.git', },
 })
 
-local lsp_configs = {}
-for _, v in ipairs(vim.api.nvim_get_runtime_file('lsp/*', true)) do
-    local name = vim.fn.fnamemodify(v, ':t:r')
-    lsp_configs[name] = true
-end
+vim.lsp.enable({
+    'bashls',
+    'clangd',
+    'cmake',
+    'copilot',
+    'gopls',
+    'jsonls',
+    'luals',
+    'rust_analyzer',
+    'ty',
+    'vimls',
+})
 
-vim.lsp.enable(vim.tbl_keys(lsp_configs))
+
+vim.api.nvim_create_autocmd('LspDetach', {
+    group = lsp_group,
+
+    callback = function(event)
+        local client =
+            vim.lsp.get_client_by_id(event.data.client_id)
+
+        if client and client.name == 'gopls' then
+            pcall(
+                vim.api.nvim_del_augroup_by_name,
+                'gopls_save_' .. event.buf
+            )
+        end
+    end,
+})
