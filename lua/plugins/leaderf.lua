@@ -4,17 +4,13 @@ local leaderf_cfg = function()
     vim.g.Lf_UseCache                = 0
     vim.g.Lf_HideHelp                = 1
     vim.g.Lf_MruMaxFiles             = 2048
-    vim.g.Lf_WindowHeight            = 0.30
     vim.g.Lf_UseMemoryCache          = 0
     vim.g.Lf_ShowRelativePath        = 0
     vim.g.Lf_UseVersionControlTool   = 0
     vim.g.Lf_IgnoreCurrentBufferName = 1
     vim.g.Lf_WindowPosition          = 'popup'
     vim.g.Lf_PopupShowStatusline     = 0
-    vim.g.Lf_PopupShowBorder         = 1
-    vim.g.Lf_PopupBorders            = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' }
     vim.g.Lf_PopupWidth              = 0.8
-    vim.g.Lf_PopupPosition           = { 0, 0 }
     vim.g.Lf_StlSeparator            = { left = "", right = "" }
     vim.g.Lf_PopupPreviewPosition    = 'top'
     vim.g.Lf_PreviewResult           = {
@@ -33,14 +29,6 @@ local leaderf_cfg = function()
     }
     vim.g.Lf_WorkingDirectoryMode    = "AF"
     vim.g.Lf_RootMarkers             = { ".git", ".svn", ".hg", ".project", ".root" }
-    vim.g.Lf_NormalMap               = {
-        File = { { "<ESC>", ':exec g:Lf_py "fileExplManager.quit()"<CR>' } },
-        Buffer = { { "<ESC>", ':exec g:Lf_py "bufExplManager.quit()"<CR>' } },
-        Mru = { { "<ESC>", ':exec g:Lf_py "mruExplManager.quit()"<CR>' } },
-        Tag = { { "<ESC>", ':exec g:Lf_py "tagExplManager.quit()"<CR>' } },
-        Function = { { "<ESC>", ':exec g:Lf_py "functionExplManager.quit()"<CR>' } },
-        Colorscheme = { { "<ESC>", ':exec g:Lf_py "colorschemeExplManager.quit()"<CR>' } },
-    }
 end
 
 return {

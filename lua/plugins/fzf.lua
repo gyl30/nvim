@@ -9,7 +9,6 @@ return {
     },
     config = function()
         require("fzf-lua").setup({
-            -- defaults = { file_icons = "mini" },
             fzf_opts = {
                 ['--info']    = false,
                 ['--no-info'] = '',
