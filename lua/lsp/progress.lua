@@ -4,6 +4,7 @@ local order = {}
 local bufnr
 local winid
 local render_pending = false
+local sequence = 0
 
 local function progress_key(client_id, token)
     return string.format(
@@ -12,6 +13,18 @@ local function progress_key(client_id, token)
         type(token),
         tostring(token)
     )
+end
+
+local function display_key(item)
+    if item.title and item.title ~= '' then
+        return string.format(
+            '%d:%s',
+            item.client_id,
+            item.title
+        )
+    end
+
+    return item.key
 end
 
 local function remove_item(key)
@@ -37,28 +50,62 @@ local function close_window()
     winid = nil
 
     if bufnr and vim.api.nvim_buf_is_valid(bufnr) then
-        vim.api.nvim_buf_delete(bufnr, { force = true })
+        vim.api.nvim_buf_delete(
+            bufnr,
+            { force = true }
+        )
     end
 
     bufnr = nil
 end
 
+local function visible_items()
+    local groups = {}
+
+    for _, key in ipairs(order) do
+        local item = items[key]
+
+        if item then
+            local identity = display_key(item)
+            local current = groups[identity]
+
+            if not current then
+                groups[identity] = item
+            elseif current.done and not item.done then
+                groups[identity] = item
+            elseif current.done == item.done
+                and item.sequence > current.sequence
+            then
+                groups[identity] = item
+            end
+        end
+    end
+
+    local result = {}
+
+    for _, item in pairs(groups) do
+        result[#result + 1] = item
+    end
+
+    table.sort(result, function(a, b)
+        return a.sequence > b.sequence
+    end)
+
+    return result
+end
+
 local function render()
+    local visible = visible_items()
     local lines = {}
     local width = 1
 
-    -- 保持原来的排列方式：
-    -- 最早的任务在最下面，新的任务向上堆叠。
-    for i = #order, 1, -1 do
-        local item = items[order[i]]
+    for _, item in ipairs(visible) do
+        lines[#lines + 1] = item.message
 
-        if item then
-            lines[#lines + 1] = item.message
-            width = math.max(
-                width,
-                vim.fn.strdisplaywidth(item.message)
-            )
-        end
+        width = math.max(
+            width,
+            vim.fn.strdisplaywidth(item.message)
+        )
     end
 
     if #lines == 0 then
@@ -71,8 +118,14 @@ local function render()
         math.max(1, vim.o.columns - 2)
     )
 
-    if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then
-        bufnr = vim.api.nvim_create_buf(false, true)
+    if
+        not bufnr
+        or not vim.api.nvim_buf_is_valid(bufnr)
+    then
+        bufnr = vim.api.nvim_create_buf(
+            false,
+            true
+        )
     end
 
     vim.api.nvim_buf_set_lines(
@@ -83,8 +136,6 @@ local function render()
         lines
     )
 
-    -- 如果切换了 tab，把浮窗移动到当前 tab，
-    -- 避免旧 tab 遗留无人管理的窗口。
     if
         winid
         and vim.api.nvim_win_is_valid(winid)
@@ -112,8 +163,14 @@ local function render()
         col = vim.o.columns,
     }
 
-    if winid and vim.api.nvim_win_is_valid(winid) then
-        vim.api.nvim_win_set_config(winid, config)
+    if
+        winid
+        and vim.api.nvim_win_is_valid(winid)
+    then
+        vim.api.nvim_win_set_config(
+            winid,
+            config
+        )
     else
         config.focusable = false
         config.style = 'minimal'
@@ -174,114 +231,140 @@ local group = vim.api.nvim_create_augroup(
     { clear = true }
 )
 
-vim.api.nvim_create_autocmd('LspProgress', {
-    group = group,
+vim.api.nvim_create_autocmd(
+    'LspProgress',
+    {
+        group = group,
 
-    callback = function(event)
-        local client =
-            vim.lsp.get_client_by_id(event.data.client_id)
+        callback = function(event)
+            local client =
+                vim.lsp.get_client_by_id(
+                    event.data.client_id
+                )
 
-        if not client then
-            return
-        end
+            if not client then
+                return
+            end
 
-        local params = event.data.params
-        local value = params and params.value
+            local params = event.data.params
+            local value =
+                params and params.value
 
-        if
-            type(value) ~= 'table'
-            or (
-                value.kind ~= 'begin'
-                and value.kind ~= 'report'
-                and value.kind ~= 'end'
+            if
+                type(value) ~= 'table'
+                or (
+                    value.kind ~= 'begin'
+                    and value.kind ~= 'report'
+                    and value.kind ~= 'end'
+                )
+            then
+                return
+            end
+
+            local key = progress_key(
+                client.id,
+                params.token
             )
-        then
-            return
-        end
 
-        local key = progress_key(
-            client.id,
-            params.token
-        )
+            local item = items[key]
 
-        local item = items[key]
+            if not item then
+                item = {
+                    key = key,
+                    client_id = client.id,
+                    generation = 0,
+                }
 
-        if not item then
-            item = {
-                client_id = client.id,
-                generation = 0,
-            }
+                items[key] = item
+                order[#order + 1] = key
+            end
 
-            items[key] = item
-            order[#order + 1] = key
-        end
+            sequence = sequence + 1
 
-        item.generation = item.generation + 1
-        item.message = format_message(client, value)
+            item.generation =
+                item.generation + 1
+            item.sequence = sequence
+            item.title = value.title
+            item.done = value.kind == 'end'
+            item.message =
+                format_message(client, value)
 
-        local generation = item.generation
+            local generation =
+                item.generation
 
-        schedule_render()
+            schedule_render()
 
-        if value.kind == 'end' then
-            vim.defer_fn(function()
-                local current = items[key]
+            if item.done then
+                vim.defer_fn(function()
+                    local current = items[key]
 
-                -- 同一个 token 在 2 秒内又开始了新任务，
-                -- 旧的延迟清理不能删除新的 progress。
+                    if
+                        current
+                        and current.generation
+                        == generation
+                    then
+                        remove_item(key)
+                        schedule_render()
+                    end
+                end, 2000)
+            end
+        end,
+    }
+)
+
+vim.api.nvim_create_autocmd(
+    'LspDetach',
+    {
+        group = group,
+
+        callback = function(event)
+            local client =
+                vim.lsp.get_client_by_id(
+                    event.data.client_id
+                )
+
+            if not client then
+                return
+            end
+
+            if
+                vim.tbl_count(
+                    client.attached_buffers
+                ) > 1
+            then
+                return
+            end
+
+            local changed = false
+
+            for key, item in pairs(items) do
                 if
-                    current
-                    and current.generation == generation
+                    item.client_id == client.id
                 then
-                    remove_item(key)
-                    schedule_render()
+                    items[key] = nil
+                    changed = true
                 end
-            end, 2000)
-        end
-    end,
-})
-
-vim.api.nvim_create_autocmd('LspDetach', {
-    group = group,
-
-    callback = function(event)
-        local client =
-            vim.lsp.get_client_by_id(event.data.client_id)
-
-        if not client then
-            return
-        end
-
-        if vim.tbl_count(client.attached_buffers) > 1 then
-            return
-        end
-
-        local changed = false
-
-        for key, item in pairs(items) do
-            if item.client_id == client.id then
-                items[key] = nil
-                changed = true
             end
-        end
 
-        if not changed then
-            return
-        end
-
-        local remaining = {}
-
-        for _, key in ipairs(order) do
-            if items[key] then
-                remaining[#remaining + 1] = key
+            if not changed then
+                return
             end
-        end
 
-        order = remaining
+            local remaining = {}
 
-        schedule_render()
-    end,
-})
+            for _, key in ipairs(order) do
+                if items[key] then
+                    remaining[#remaining + 1] =
+                        key
+                end
+            end
+
+            order = remaining
+
+            schedule_render()
+        end,
+    }
+)
 
 vim.api.nvim_create_autocmd(
     {
