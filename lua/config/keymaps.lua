@@ -12,7 +12,6 @@ vim.keymap.set('n', 'H', ':bprev<CR>', { desc = 'Prev buffer', noremap = false }
 vim.keymap.set('n', 'L', ':bnext<CR>', { desc = 'Next buffer', noremap = false })
 vim.keymap.set('n', 'c', '"_c')
 vim.keymap.set('n', 'C', '"_C')
-vim.keymap.set('n', 'cc', '"_cc')
 vim.keymap.set('x', 'c', '"_c')
 vim.keymap.set('x', 'p', 'p:let @+=@0<CR>:let @"=@0<CR>')
 vim.keymap.set('n', '=', [[:vertical resize +5<CR>]])
