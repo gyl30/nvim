@@ -19,7 +19,6 @@ return {
         {
             "fang2hou/blink-copilot",
         },
-        'saghen/blink.compat',
         "moyiz/blink-emoji.nvim",
     },
     opts = {
@@ -33,18 +32,15 @@ return {
         },
         completion = {
             appearance = {
-                use_nvim_cmp_as_default = false,
                 nerd_font_variant = "normal",
             },
-            accept = { auto_brackets = { enabled = true } },
             documentation = { auto_show = true, },
             list = {
-                selection = { preselect = false, auto_insert = true }
+                selection = { preselect = false, }
             },
             trigger = { prefetch_on_insert = false },
             menu = {
                 draw = {
-                    align_to = 'label',
                     columns = {
                         { "kind_icon", "label",       "label_description", gap = 1 },
                         { "kind",      "source_name", gap = 1 },
@@ -98,5 +94,4 @@ return {
             },
         },
     },
-    opts_extend = { "sources.default" }
 }
