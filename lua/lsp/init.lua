@@ -165,27 +165,23 @@ end
 vim.api.nvim_create_autocmd('ColorScheme', { callback = lsp_token_hi })
 
 local on_attach = function(client, bufnr)
-    vim.keymap.set('n', '<leader>ih', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
-    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename)
+    vim.keymap.set('n', '<leader>ih', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end,
+        { buffer = bufnr })
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { buffer = bufnr })
     vim.keymap.set('n', '<leader>lr', function() vim.cmd.lsp('restart') end, { buffer = bufnr })
     vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
-    if client:supports_method 'textDocument/signatureHelp' then
-        vim.keymap.set('i', '<C-k>', function()
-            if require('blink.cmp.completion.windows.menu').win:is_open() then
-                require('blink.cmp').hide()
-            end
-            vim.lsp.buf.signature_help()
-        end)
-    end
     if client:supports_method 'textDocument/documentHighlight' then
-        local under_cursor_highlights_group = vim.api.nvim_create_augroup('LspCursorHighlights', { clear = false })
+        local group = vim.api.nvim_create_augroup(
+            'LspCursorHighlights_' .. bufnr,
+            { clear = true }
+        )
         vim.api.nvim_create_autocmd({ 'CursorHold', 'InsertLeave' }, {
-            group = under_cursor_highlights_group,
+            group = group,
             buffer = bufnr,
             callback = vim.lsp.buf.document_highlight,
         })
         vim.api.nvim_create_autocmd({ 'CursorMoved', 'InsertEnter', 'BufLeave' }, {
-            group = under_cursor_highlights_group,
+            group = group,
             buffer = bufnr,
             callback = vim.lsp.buf.clear_references,
         })
@@ -193,8 +189,8 @@ local on_attach = function(client, bufnr)
 
     require('lsp.progress')
 
-    if client.server_capabilities.documentFormattingProvider then
-        vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>')
+    if client:supports_method('textDocument/formatting') then
+        vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', { buffer = bufnr })
     end
 
     if client.server_capabilities.semanticTokensProvider then

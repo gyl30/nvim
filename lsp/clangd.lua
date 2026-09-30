@@ -1,9 +1,6 @@
 return {
-    filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda', 'proto' },
-    single_file_support = true,
+    filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda'},
     init_options = {
-        usePlaceholders = true,
-        completeUnimported = true,
         clangdFileStatus = true,
     },
     capabilities = {
