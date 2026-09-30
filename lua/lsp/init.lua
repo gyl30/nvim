@@ -75,15 +75,34 @@ local function lsp_token_hi()
         vim.api.nvim_set_hl(0, group, highlight)
     end
 end
-vim.api.nvim_create_autocmd('ColorScheme', { callback = lsp_token_hi })
+
+local color_scheme_group = vim.api.nvim_create_augroup(
+    'LspHighlights',
+    { clear = true }
+)
+
+vim.api.nvim_create_autocmd('ColorScheme', {
+    group = color_scheme_group,
+    callback = lsp_token_hi,
+})
 
 local on_attach = function(client, bufnr)
-    vim.keymap.set('n', '<leader>ih', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end,
-        { buffer = bufnr })
     vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { buffer = bufnr })
     vim.keymap.set('n', '<leader>lr', function() vim.cmd.lsp('restart') end, { buffer = bufnr })
     vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
-    if client:supports_method 'textDocument/documentHighlight' then
+
+    if client:supports_method('textDocument/inlayHint') then
+        vim.keymap.set('n', '<leader>ih', function()
+            vim.lsp.inlay_hint.enable(
+                not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }),
+                { bufnr = bufnr }
+            )
+        end, {
+            buffer = bufnr,
+        })
+    end
+
+    if client:supports_method('textDocument/documentHighlight') then
         local group = vim.api.nvim_create_augroup(
             'LspCursorHighlights_' .. bufnr,
             { clear = true }
