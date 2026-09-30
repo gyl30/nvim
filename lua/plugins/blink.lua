@@ -19,16 +19,6 @@ return {
         {
             "fang2hou/blink-copilot",
         },
-        {
-            "onsails/lspkind.nvim",
-            opts = {
-                symbol_map = {
-                    spell = "󰓆",
-                    cmdline = "",
-                    markdown = "",
-                },
-            },
-        },
         'saghen/blink.compat',
         "moyiz/blink-emoji.nvim",
     },
@@ -55,8 +45,6 @@ return {
             menu = {
                 draw = {
                     align_to = 'label',
-                    -- columns = { { 'label' }, { 'kind_icon' }, { 'source_name' } },
-                    -- columns = { { 'label', 'label_description', gap = 1 }, { 'kind_icon' }, { 'source_name' } },
                     columns = {
                         { "kind_icon", "label",       "label_description", gap = 1 },
                         { "kind",      "source_name", gap = 1 },
