@@ -5,6 +5,9 @@ return {
     dependencies = {
         {
             'Exafunction/codeium.nvim',
+            dependencies = {
+                'nvim-lua/plenary.nvim',
+            },
             config = function()
                 require("codeium").setup({
                     enable_cmp_source = false,
@@ -58,7 +61,6 @@ return {
                         { "kind_icon", "label",       "label_description", gap = 1 },
                         { "kind",      "source_name", gap = 1 },
                     },
-                    treesitter = { 'lsp' },
                 }
             }
         },

@@ -32,14 +32,6 @@ vim.api.nvim_create_autocmd({ 'FileType' }, {
     end,
 })
 
-vim.api.nvim_create_autocmd('FileType', {
-    group = vim.api.nvim_create_augroup('BigFile', { clear = true }),
-    callback = function(args)
-        vim.schedule(function()
-            vim.bo[args.buf].syntax = vim.filetype.match { buf = args.buf } or ''
-        end)
-    end,
-})
 
 vim.api.nvim_create_autocmd('BufReadPost', {
     group = vim.api.nvim_create_augroup('LastLocation', { clear = true }),
@@ -52,23 +44,30 @@ vim.api.nvim_create_autocmd('BufReadPost', {
     end,
 })
 
-vim.api.nvim_create_autocmd({ 'VimResized' }, {
+vim.api.nvim_create_autocmd('VimResized', {
+    group = vim.api.nvim_create_augroup(
+        'EqualizeWindows',
+        { clear = true }
+    ),
     callback = function()
-        vim.cmd('tabdo wincmd =')
+        vim.cmd('wincmd =')
     end,
 })
-vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
-    pattern = '*',
-    group = vim.api.nvim_create_augroup('AutoCreateDir', {}),
+
+vim.api.nvim_create_autocmd('BufWritePre', {
+    group = vim.api.nvim_create_augroup(
+        'AutoCreateDir',
+        { clear = true }
+    ),
     callback = function(ctx)
-        if vim.bo.ft == 'oil' then
+        if ctx.file:find('://', 1, true) then
             return
         end
-        local dir = vim.fn.fnamemodify(ctx.file, ':p:h')
-        local res = vim.fn.isdirectory(dir)
-        if res == 0 then
-            vim.fn.mkdir(dir, 'p')
-        end
+
+        vim.fn.mkdir(
+            vim.fn.fnamemodify(ctx.file, ':p:h'),
+            'p'
+        )
     end,
 })
 
