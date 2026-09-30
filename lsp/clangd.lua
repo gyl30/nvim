@@ -1,8 +1,5 @@
 return {
-    filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda'},
-    init_options = {
-        clangdFileStatus = true,
-    },
+    filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda' },
     capabilities = {
         textDocument = {
             completion = {

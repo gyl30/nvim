@@ -1,3 +1,4 @@
+require('lsp.progress')
 vim.lsp.log.set_level('off')
 
 local function gopls_organize_imports(client, bufnr)
@@ -187,7 +188,6 @@ local on_attach = function(client, bufnr)
         })
     end
 
-    require('lsp.progress')
 
     if client:supports_method('textDocument/formatting') then
         vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', { buffer = bufnr })
