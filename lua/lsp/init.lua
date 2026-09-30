@@ -85,90 +85,194 @@ vim.api.nvim_create_autocmd('ColorScheme', {
     group = color_scheme_group,
     callback = lsp_token_hi,
 })
+local lsp_group = vim.api.nvim_create_augroup(
+    'Lsp',
+    { clear = true }
+)
 
-local on_attach = function(client, bufnr)
-    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { buffer = bufnr })
-    vim.keymap.set('n', '<leader>lr', function() vim.cmd.lsp('restart') end, { buffer = bufnr })
-    vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
+vim.api.nvim_create_autocmd('LspAttach', {
+    group = lsp_group,
 
-    if client:supports_method('textDocument/inlayHint') then
-        vim.keymap.set('n', '<leader>ih', function()
-            vim.lsp.inlay_hint.enable(
-                not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }),
-                { bufnr = bufnr }
+    callback = function(event)
+        local bufnr = event.buf
+        local client =
+            assert(vim.lsp.get_client_by_id(event.data.client_id))
+
+        if client:supports_method(
+                'textDocument/rename',
+                bufnr
+            ) then
+            vim.keymap.set(
+                'n',
+                '<leader>rn',
+                vim.lsp.buf.rename,
+                {
+                    buffer = bufnr,
+                    desc = 'Rename',
+                }
             )
+        end
+
+        vim.keymap.set('n', '<leader>lr', function()
+            vim.cmd.lsp('restart')
         end, {
             buffer = bufnr,
+            desc = 'Restart LSP',
         })
-    end
 
-    if client:supports_method('textDocument/documentHighlight') then
-        local group = vim.api.nvim_create_augroup(
-            'LspCursorHighlights_' .. bufnr,
-            { clear = true }
-        )
-        vim.api.nvim_create_autocmd({ 'CursorHold', 'InsertLeave' }, {
-            group = group,
-            buffer = bufnr,
-            callback = vim.lsp.buf.document_highlight,
-        })
-        vim.api.nvim_create_autocmd({ 'CursorMoved', 'InsertEnter', 'BufLeave' }, {
-            group = group,
-            buffer = bufnr,
-            callback = vim.lsp.buf.clear_references,
-        })
-    end
+        if client:supports_method(
+                'textDocument/inlayHint',
+                bufnr
+            ) then
+            vim.keymap.set('n', '<leader>ih', function()
+                vim.lsp.inlay_hint.enable(
+                    not vim.lsp.inlay_hint.is_enabled({
+                        bufnr = bufnr,
+                    }),
+                    {
+                        bufnr = bufnr,
+                    }
+                )
+            end, {
+                buffer = bufnr,
+                desc = 'Toggle inlay hints',
+            })
+        end
 
+        if client:supports_method(
+                'textDocument/documentHighlight',
+                bufnr
+            ) then
+            local group = vim.api.nvim_create_augroup(
+                'LspCursorHighlights_' .. bufnr,
+                { clear = true }
+            )
 
-    if client:supports_method('textDocument/formatting') then
-        vim.keymap.set('n', '<leader>fm', '<cmd>lua vim.lsp.buf.format()<cr>', { buffer = bufnr })
-    end
+            vim.api.nvim_create_autocmd(
+                { 'CursorHold', 'InsertLeave' },
+                {
+                    group = group,
+                    buffer = bufnr,
+                    callback =
+                        vim.lsp.buf.document_highlight,
+                }
+            )
 
-    if client.server_capabilities.semanticTokensProvider then
-        vim.treesitter.stop(bufnr)
-    end
-    if client.name == 'gopls' then
-        local group = vim.api.nvim_create_augroup('GoplsSourceOrganizeImports_' .. bufnr, { clear = true })
-        vim.api.nvim_create_autocmd('BufWritePre', {
-            group = group,
-            buffer = bufnr,
-            callback = function()
-                gopls_organize_imports(client, bufnr)
+            vim.api.nvim_create_autocmd(
+                { 'CursorMoved', 'InsertEnter', 'BufLeave' },
+                {
+                    group = group,
+                    buffer = bufnr,
+                    callback =
+                        vim.lsp.buf.clear_references,
+                }
+            )
+        end
+
+        if client:supports_method(
+                'textDocument/formatting',
+                bufnr
+            ) then
+            vim.keymap.set('n', '<leader>fm', function()
                 vim.lsp.buf.format({
                     bufnr = bufnr,
-                    async = false,
-                    timeout_ms = 3000,
-                    filter = function(c)
-                        return c.name == 'gopls'
-                    end,
                 })
-            end,
-        })
-    end
+            end, {
+                buffer = bufnr,
+                desc = 'Format',
+            })
+        end
+
+        if client.server_capabilities.semanticTokensProvider then
+            vim.treesitter.stop(bufnr)
+        end
+        if client.name == 'gopls' then
+            local group = vim.api.nvim_create_augroup(
+                'GoplsSave_' .. bufnr,
+                { clear = true }
+            )
+
+            vim.api.nvim_create_autocmd('BufWritePre', {
+                group = group,
+                buffer = bufnr,
+                callback = function()
+                    local params = {
+                        textDocument =
+                            vim.lsp.util.make_text_document_params(bufnr),
+
+                        range = {
+                            start = {
+                                line = 0,
+                                character = 0,
+                            },
+                            ['end'] = {
+                                line = 0,
+                                character = 0,
+                            },
+                        },
+
+                        context = {
+                            only = {
+                                'source.organizeImports',
+                            },
+                            diagnostics = {},
+                        },
+                    }
+
+                    local response = client:request_sync(
+                        'textDocument/codeAction',
+                        params,
+                        3000,
+                        bufnr
+                    )
+
+                    for _, action in ipairs(
+                        response and response.result or {}
+                    ) do
+                        if action.edit then
+                            vim.lsp.util.apply_workspace_edit(
+                                action.edit,
+                                client.offset_encoding
+                            )
+                        end
+                    end
+
+                    vim.lsp.buf.format({
+                        bufnr = bufnr,
+                        name = 'gopls',
+                        timeout_ms = 3000,
+                    })
+                end,
+            })
+        end
+    end,
+})
+
+
+local function lsp_float_options(options)
+    return vim.tbl_extend(
+        'keep',
+        options or {},
+        {
+            max_height = math.floor(vim.o.lines * 0.5),
+            max_width = math.floor(vim.o.columns * 0.4),
+        }
+    )
 end
-
-
 
 local hover = vim.lsp.buf.hover
 ---@diagnostic disable-next-line: duplicate-set-field
-vim.lsp.buf.hover = function()
-    return hover {
-        max_height = math.floor(vim.o.lines * 0.5),
-        max_width = math.floor(vim.o.columns * 0.4),
-    }
+vim.lsp.buf.hover = function(options)
+    return hover(lsp_float_options(options))
 end
 
 local signature_help = vim.lsp.buf.signature_help
 ---@diagnostic disable-next-line: duplicate-set-field
-vim.lsp.buf.signature_help = function()
-    return signature_help {
-        max_height = math.floor(vim.o.lines * 0.5),
-        max_width = math.floor(vim.o.columns * 0.4),
-    }
+vim.lsp.buf.signature_help = function(options)
+    return signature_help(lsp_float_options(options))
 end
 
 vim.lsp.config('*', {
-    on_attach = on_attach,
     root_markers = { '.git', },
 })
 
@@ -179,5 +283,3 @@ for _, v in ipairs(vim.api.nvim_get_runtime_file('lsp/*', true)) do
 end
 
 vim.lsp.enable(vim.tbl_keys(lsp_configs))
-
-vim.api.nvim_create_autocmd('LspDetach', { command = 'setl foldexpr<' })
